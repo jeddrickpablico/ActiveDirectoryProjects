@@ -6,9 +6,9 @@ This repository contains the documentation, configurations, and deployment strat
 ---
 
 ## 🛠️ Infrastructure & Tech Stack
-* **Operating Systems:** Windows Server 2022 (Domain Controller), Windows 10/11 Pro (Client Machines)
-* **Virtualization Platform:** Type-2 Hypervisor / Lab Environment Configuration
-* **Core Network Services:** Active Directory Domain Services (AD DS), DNS, DHCP
+* **Operating Systems:** Windows Server 2022 / Windows Server 2025 (Domain Controllers), Windows 10/11 Pro (Client Machines)
+* **Virtualization Platform:** VMware
+* **Core Network Services:** Active Directory Domain Services (AD DS), DNS *(To be implemented)*, DHCP *(To be implemented)*
 
 ---
 
@@ -16,7 +16,7 @@ This repository contains the documentation, configurations, and deployment strat
 
 ### 1. Domain Controller Installation & Network Architecture
 * Designed and deployed a dedicated private network space for isolated lab security.
-* Configured a static IP environment and established Active Directory Domain Services (AD DS) root domains.
+* Configured a static IP environment and established Active Directory Domain Services (AD DS) root domains. *(To be implemented)*
 
 ### 2. Identity and Access Management (IAM)
 * Structured scalable Organizational Units (OUs) reflecting real-world corporate hierarchies (e.g., Administration, HR, IT, Finance).
