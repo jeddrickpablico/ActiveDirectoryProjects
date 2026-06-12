@@ -122,17 +122,81 @@ Installing the AD DS role does not automatically make the server a Domain Contro
 </p>
 <p><i>Figure 2.6: Passing the prerequisite check and beginning the promotion.</i></p>
 
-**2.7** Once the server has rebooted, you can see that at the login page to the left side of administor, you can see the domain name i.e. JEDDRICKPABLICO/administrator. Log in with your password
+**2.7** Once the server has rebooted, you will notice that the login screen now displays your domain name prefixing the administrator account (e.g., `JEDDRICKPABLICO\Administrator`). Log in using your administrator password to access the newly established domain environment.
 <p>
-  <img src="./images/DomainControllerInstallationAndSetup/16.PNG" alt="Domain name beside administrator" width="700">
+  <img src="./images/DomainControllerInstallationAndSetup/16.PNG" alt="Verifying the domain identity at the Windows Server login screen" width="700">
 </p>
-<p><i>Figure 2.7: Domain name beside administrator.</i></p>
+<p><i>Figure 2.7: Verifying the domain identity at the Windows Server login screen.</i></p>
 
-
-**2.8** To check if Active Directory tools are installed, click the windows button and click Windows Administrative Tools. You can also tye "Windows Administrative Tools" in the search bar. Click **Active Directory Users and Computers**
+**2.8** To verify that the Active Directory management utilities are successfully installed, open the Start menu and navigate to **Windows Administrative Tools** (or search for it directly in the taskbar). From the list of tools, launch **Active Directory Users and Computers (ADUC)**. This console will be the primary interface for managing network objects.
 <p>
-  <img src="./images/DomainControllerInstallationAndSetup/17.PNG" alt="Verifying Successful Installation of Active Directory Tools" width="700">
+  <img src="./images/DomainControllerInstallationAndSetup/17.PNG" alt="Launching Active Directory Users and Computers from Administrative Tools" width="700">
 </p>
-<p><i>Figure 2.7: Verifying Successful Installation of Active Directory Tools.</i></p>
+<p><i>Figure 2.8: Launching Active Directory Users and Computers from Administrative Tools.</i></p>
 
-## Phase 3: Architecting a logical hierarchy using Organizational Units (OUs) to represent distinct departments (e.g., IT, HR, Sales).
+---
+
+## 📁 Phase 3: Architecting a Logical Hierarchy using Organizational Units (OUs)
+
+Before creating user accounts, it is crucial to establish a logical directory structure. Active Directory utilizes **Organizational Units (OUs)** to achieve this. An OU acts as a container—much like a standard file folder—that holds various network objects such as users, computers, servers, and groups. 
+
+Structuring OUs correctly is a foundational security practice. It allows administrators to easily apply Group Policy Objects (GPOs) and cleanly delegate administrative permissions to specific segments of the company without granting blanket domain access.
+
+### 3.1 Establishing Top-Level and Nested OUs
+A standard enterprise best practice is to structure the directory geographically, followed by object categories. 
+
+**3.1.1 Top-Level OUs (Geography):** To create your first container, right-click your domain name in ADUC, hover over **New**, and select **Organizational Unit**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/18.PNG" alt="Creating Top-Level OU" width="700">
+</p>
+<p><i>Figure 3.1.1: Initiating the creation of a Top-Level OU.</i></p>
+
+**3.1.2** In the New Object dialog box, type `USA` for the name and click **OK**. *(Note: Keep the "Protect container from accidental deletion" box checked as a safety measure).*
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/19.PNG" alt="Creating Top-Level OU (USA)" width="700">
+</p>
+<p><i>Figure 3.1.2: Naming the USA Top-Level OU.</i></p>
+
+**3.1.3** Repeat this exact process to establish containers for your other primary regions, such as `Europe` and `Asia`.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/20.PNG" alt="Create Top-Level OU (Europe and Asia)" width="700">
+</p>
+<p><i>Figure 3.1.3: Completed geographic top-level directory structure.</i></p>
+
+**3.1.4 Nested OUs (Object Types):** Grouping all objects directly inside a geographic OU becomes unmanageable at scale. Instead, inside the `USA` OU, create nested sub-OUs to categorize the assets. Typical nested OUs include:
+   * **Computers:** For standard employee workstations.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/21.PNG" alt="Nested OU in USA (Computer)" width="700">
+</p>
+<p><i>Figure 3.1.4.a: Creating a nested "Computers" OU inside the USA container.</i></p>
+
+   * **Servers:** For infrastructure assets.
+   * **Users:** For employee accounts.
+   
+Repeat this internal nesting structure for the remaining geographic OUs to maintain a uniform architecture across the domain.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/22.PNG" alt="Nested OUs" width="700">
+</p>
+<p><i>Figure 3.1.4.b: Fully deployed nested OU architecture across all regions.</i></p>
+
+---
+
+### 3.2 Understanding Group Scopes and Types
+Once the OU structure is built, we create Groups within the `Users` OU to organize employees by department (e.g., IT, HR, Finance). When creating a new Group, Active Directory requires you to define its **Scope** and **Type**.
+
+**Group Scopes (Where the group is applied):**
+* **Global:** Used to grant permissions to objects located within the *same* domain. This is the most common scope for departmental grouping (e.g., an IT group accessing resources strictly within `JeddrickPablico.local`).
+* **Universal:** Used in complex environments spanning multiple domains, allowing users from one domain to access resources located in an entirely different domain.
+
+**Group Types (What the group does):**
+* **Security Groups:** Used to assign permissions and user rights to shared network resources. 
+  * *Example:* Giving a "Finance" Security Group read/write access to financial folders, or utilizing Built-in Security Groups (like *Domain Admins* or *Remote Desktop Users*) to grant broad administrative control.
+* **Distribution Groups:** Used exclusively for email distribution lists. These groups do *not* grant network access permissions.
+  * *Example:* Creating a "DL-IT Admins" or "All Employees" Distribution Group so Exchange servers can route emails to specific collections of people.
+
+
+**4.4 Assigning Group Membership:** The user currently exists but lacks access to departmental resources. Right-click the newly created user profile and select **Add to a group...**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/26.PNG" alt="Selecting Add to a group" width="700">
+</p>
+<p><i>Figure 4
