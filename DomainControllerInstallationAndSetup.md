@@ -182,21 +182,53 @@ Repeat this internal nesting structure for the remaining geographic OUs to maint
 ---
 
 ### 3.2 Understanding Group Scopes and Types
-Once the OU structure is built, we create Groups within the `Users` OU to organize employees by department (e.g., IT, HR, Finance). When creating a new Group, Active Directory requires you to define its **Scope** and **Type**.
+Once the OU structure is built, we create **Groups** within the departmental `Users` OUs to organize employees. When creating a new Group, Active Directory requires you to define its **Scope** and **Type**.
 
 **Group Scopes (Where the group is applied):**
-* **Global:** Used to grant permissions to objects located within the *same* domain. This is the most common scope for departmental grouping (e.g., an IT group accessing resources strictly within `JeddrickPablico.local`).
-* **Universal:** Used in complex environments spanning multiple domains, allowing users from one domain to access resources located in an entirely different domain.
+* **Domain Local:** Used to assign permissions directly to local domain resources (like a specific shared folder or printer). 
+* **Global:** Used to group users based on their department or role (e.g., grouping IT staff together). Global groups are then placed inside Domain Local groups to grant them access. This is the most common scope for departmental grouping.
+* **Universal:** Used in complex, enterprise-level environments spanning multiple domains, allowing users from one domain to access resources located in an entirely different domain.
+
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/GroupScopeGraphic.png" alt="Group Scope Graphic" width="700">
+</p>
+<p><i>Figure 3.2.a: Active Directory Group Scopes.</i></p>
 
 **Group Types (What the group does):**
 * **Security Groups:** Used to assign permissions and user rights to shared network resources. 
   * *Example:* Giving a "Finance" Security Group read/write access to financial folders, or utilizing Built-in Security Groups (like *Domain Admins* or *Remote Desktop Users*) to grant broad administrative control.
-* **Distribution Groups:** Used exclusively for email distribution lists. These groups do *not* grant network access permissions.
-  * *Example:* Creating a "DL-IT Admins" or "All Employees" Distribution Group so Exchange servers can route emails to specific collections of people.
-
-
-**4.4 Assigning Group Membership:** The user currently exists but lacks access to departmental resources. Right-click the newly created user profile and select **Add to a group...**.
+    
 <p>
-  <img src="./images/DomainControllerInstallationAndSetup/26.PNG" alt="Selecting Add to a group" width="700">
+  <img src="./images/DomainControllerInstallationAndSetup/SecurityGroupsGraphic.png" alt="Security Group Graphic" width="700">
 </p>
-<p><i>Figure 4
+<p><i>Figure 3.2.b: Active Directory Security Groups.</i></p>
+
+* **Distribution Groups:** Used exclusively for email distribution lists. These groups do *not* possess Security Identifiers (SIDs) and cannot grant network access permissions.
+  * *Example:* Creating a `DL-IT Admins` or `All Employees` Distribution Group so an Exchange server can route mass communications to specific collections of people.
+
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/DistributionGroupGraphic.png" alt="Distribution Group Graphic" width="700">
+</p>
+<p><i>Figure 3.2.c: Active Directory Distribution Groups.</i></p>
+
+#### Creating the Groups
+
+**3.2.1** To create a new group, right-click on your designated `Users` OU, hover over **New**, and click on **Group**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/23.PNG" alt="Creating a Group in Users OU" width="700">
+</p>
+<p><i>Figure 3.2.1: Initiating Group creation within the Users OU.</i></p>
+
+**3.2.2** In the dialog box, type `IT` (or your desired department) as the **Group name**. Ensure the Group scope is set to **Global** and the Group type is set to **Security**, then click **OK**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/24.PNG" alt="Creating an IT Group in Users OU" width="700">
+</p>
+<p><i>Figure 3.2.2: Naming the IT Security Group.</i></p>
+
+**3.2.3** To create an email mailing list, initiate the same group creation process, but change the **Group type** to **Distribution**. 
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/25.PNG" alt="Creating Distribution List for IT Staff" width="700">
+</p>
+<p><i>Figure 3.2.3: Creating a Distribution List for IT Staff communications.</i></p>
+
+--- 
