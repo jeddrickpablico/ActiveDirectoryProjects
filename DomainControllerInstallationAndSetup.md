@@ -232,3 +232,42 @@ Once the OU structure is built, we create **Groups** within the departmental `Us
 <p><i>Figure 3.2.3: Creating a Distribution List for IT Staff communications.</i></p>
 
 --- 
+
+
+## 👥 Phase 4: Provisioning User Accounts and Assigning Security Groups
+
+With the directory architecture and security groups securely in place, user accounts can now be provisioned. 
+
+*Note: In Active Directory, it is a strict best practice to utilize **Role-Based Access Control (RBAC)**. This means you should never assign resource permissions directly to a single user. Instead, you assign users to Groups, and give permissions to those Groups. This makes offboarding, onboarding, and auditing infinitely easier.* 
+
+*(Note on Automation: In modern enterprise environments, manual user creation is rarely done. Bulk user provisioning is typically automated using **PowerShell scripts** that pull data directly from HR databases to ensure accuracy and save time. However, for the sake of simplicity in this foundational lab, we will be creating users manually. Automated PowerShell scripting will be covered in future tutorials.)*
+
+**4.1 Creating the User Object:** Navigate to the specific departmental or regional `Users` OU where the employee belongs. Right-click the empty space, select **New**, and choose **User**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/26.PNG" alt="Creating a new user account" width="700">
+</p>
+<p><i>Figure 4.1: Initiating manual user creation within a designated OU.</i></p>
+
+**4.2 Defining Credentials:** Fill in the required user identity parameters (First Name, Last Name). For the **User logon name** (the UPN prefix), utilize a standard corporate naming convention, such as `first.last` or `firstinitial+lastname` (e.g., `john.doe`). Click **Next**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/27.PNG" alt="Defining user credentials and logon name" width="700">
+</p>
+<p><i>Figure 4.2: Establishing the user's primary logon identity.</i></p>
+
+**4.3 Securing the Account:** Assign a temporary complex password. Ensure the **"User must change password at next logon"** checkbox is selected. This is a critical security mandate that prevents the IT administrator from knowing the user's permanent password. Click **Next** and then **Finish**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/28.PNG" alt="Configuring initial password policies" width="700">
+</p>
+<p><i>Figure 4.3: Enforcing initial account security policies.</i></p>
+
+**4.4 Assigning Group Membership:** The user account now exists, but the user currently lacks access to departmental resources. To fix this, right-click the newly created user profile and select **Add to a group...**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/29.PNG" alt="Selecting Add to a group" width="700">
+</p>
+<p><i>Figure 4.4: Opening the group assignment context menu.</i></p>
+
+**4.5 Finalizing Access:** In the object selection box, type the name of the departmental Security or Distribution group you created in Phase 3 (e.g., `IT`). Click **Check Names** to validate the group (the name will become underlined), then click **OK** to successfully grant the user their required network permissions.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/30.PNG" alt="Validating and assigning group membership" width="700">
+</p>
+<p><i>Figure 4.5: Resolving the group name and finalizing user permissions.</i></p>
