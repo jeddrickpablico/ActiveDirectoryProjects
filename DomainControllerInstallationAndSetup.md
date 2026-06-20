@@ -352,3 +352,30 @@ Click **OK** to apply the static configuration.
 > **3. Single Point of Failure (High Availability)**
 > * **The Risk:** This lab builds a single Domain Controller. If this single virtual machine crashes or becomes corrupted, the entire network goes down. No users can log in, DNS resolution stops, and all shared resources become inaccessible.
 > * **The Enterprise Solution:** A production environment will always deploy at minimum **two** Domain Controllers (e.g., `DC01` and `DC02`). They continuously replicate the Active Directory database between each other. If `DC01` goes offline, `DC02` seamlessly takes over authentication and DNS requests.
+
+**5.1.7** To verify that your network settings were applied correctly, return to the Command Prompt and execute the command `ipconfig /all`. Review the output to ensure that the IPv4 Address, Subnet Mask, Default Gateway, and specifically the DNS Servers precisely match the static values you configured in the previous steps.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/37.PNG" alt="Verifying network settings using ipconfig /all" width="700">
+</p>
+<p><i>Figure 5.1.7: Verifying the new static IP and DNS configuration.</i></p>
+
+---
+
+### 5.2 Configuring the Client Virtual Machine for Domain Join
+
+To test the domain, you must install a fresh instance of a compatible Windows OS (like Windows 10 or 11 Pro) on a separate virtual machine. The following steps take place during the initial Out-Of-Box Experience (OOBE) setup of that client machine.
+
+**5.2.1** During the initial Windows setup, you will be prompted to sign in with a Microsoft account. To bypass this and prepare the machine for our network, select the offline option, typically labeled **Domain join instead** or **Join a local Active Directory domain** (depending on your specific Windows build).
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/38.PNG" alt="Selecting the option to join a local Active Directory domain during Windows setup" width="700">
+</p>
+<p><i>Figure 5.2.1: Bypassing the Microsoft account requirement to prepare for a domain join.</i></p>
+
+**5.2.2** The setup wizard will now ask you to create a user. Create a standard local administrative account (e.g., `LocalAdmin`) and assign it a password. 
+
+*Note: You must complete this local setup to reach the Windows desktop. This local account acts as a fallback administrator. Once we successfully connect this machine to the server, we will log out of this local account and log back in using the Active Directory user credentials we created in Phase 4.*
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/39.PNG" alt="Creating a local administrator account during Windows installation" width="700">
+</p>
+<p><i>Figure 5.2.2: Establishing a temporary local account to complete the OS installation.</i></p>
+
