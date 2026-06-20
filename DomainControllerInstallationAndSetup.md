@@ -285,10 +285,70 @@ In this phase, we will utilize a separate client virtual machine running concurr
 
 To ensure the client machine can communicate reliably with the directory, we will configure the Windows Server to have a permanent static IP address first. Once the server's network profile is locked down, we will configure this client's network adapter to utilize our Domain Controller as its primary DNS server, establish a connection to the `JeddrickPablico.local` domain, and finally, log in using the specific user credentials provisioned in Phase 4. This process confirms that the Domain Controller is actively resolving DNS queries, managing network identities, and securely handling remote authentication requests across the homelab environment.
 
-**5.1 Configuring a Static IP Address on the Windows Server** 
+---
+
+### 5.1 Configuring a Static IP Address on the Windows Server
 
 **5.1.1** Right-click the network/computer icon in the system tray (located at the bottom-right corner of your taskbar) and click **Open Network & Internet settings**.
 <p>
   <img src="./images/DomainControllerInstallationAndSetup/31.PNG" alt="Opening Network and Internet Settings from the system tray" width="700">
 </p>
 <p><i>Figure 5.1.1: Navigating to Network & Internet Settings.</i></p>
+
+**5.1.2** Under the advanced network settings, click **Change adapter options**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/32.PNG" alt="Clicking Change adapter options" width="700">
+</p>
+<p><i>Figure 5.1.2: Accessing the advanced network adapter settings.</i></p>
+
+**5.1.3** Right-click on your primary active **network adapter** (e.g., `Ethernet0`) and select **Properties**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/33.PNG" alt="Right-clicking the network adapter to access Properties" width="700">
+</p>
+<p><i>Figure 5.1.3: Opening the network adapter properties.</i></p>
+
+**5.1.4** In the list of connection items, highlight **Internet Protocol Version 4 (TCP/IPv4)** and click the **Properties** button.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/34.PNG" alt="Selecting IPv4 Properties" width="700">
+</p>
+<p><i>Figure 5.1.4: Accessing the IPv4 configuration properties.</i></p>
+
+**5.1.5** To keep this homelab environment simple, we will not architect an entirely new subnet. Instead, we will capture the current dynamic IP address provided by your virtual machine manager's DHCP server, and convert that exact IP into a permanent static assignment. 
+
+To find this information, open **Command Prompt**, type `ipconfig`, and hit **Enter**. Record the following outputs:
+*   **IPv4 Address** *(e.g., in my lab, it is `192.168.2.91`)*
+*   **Subnet Mask** *(e.g., `255.255.255.0`)*
+*   **Default Gateway** *(e.g., `192.168.2.1`)*
+
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/35.PNG" alt="Running ipconfig in Command Prompt to find network details" width="700">
+</p>
+<p><i>Figure 5.1.5: Using ipconfig to determine the current DHCP lease configuration.</i></p>
+
+**5.1.6** Return to the **Internet Protocol Version 4 (TCP/IPv4) Properties** window. Select **"Use the following IP address"** and input the IPv4 Address, Subnet mask, and Default gateway you recorded in the previous step. 
+
+Next, configure the DNS servers:
+*   **Preferred DNS server:** Enter `127.0.0.1`. This is the loopback address. Because this server is acting as the Domain Controller, it is also the authoritative DNS server for the network. Setting the DNS to loopback tells the server to query itself to resolve internal domain requests.
+*   **Alternate DNS server:** Enter `8.8.8.8` (Google's Public DNS). This acts as a fallback forwarder, allowing the server to resolve external web traffic so it can still access the internet.
+
+Click **OK** to apply the static configuration.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/36.PNG" alt="Entering static IP and DNS details in the IPv4 properties window" width="700">
+</p>
+<p><i>Figure 5.1.6: Assigning the static IP and DNS configurations.</i></p>
+
+> ⚠️ **Enterprise Context: Real-World Practices vs. Homelab Configuration**
+> 
+> While the configuration above is perfectly suited for a functional homelab, it introduces several operational and security risks that would violate enterprise standards. If you were deploying this in a production environment, you would need to adjust the following:
+> 
+> **1. The Public DNS Risk (Do not put `8.8.8.8` on the NIC)**
+> * **The Risk:** Active Directory relies entirely on DNS to locate services (via SRV records). If your server queries `8.8.8.8` (Google) for an internal AD query, Google will not know what `JeddrickPablico.local` is, and the query will fail. Furthermore, if your primary loopback DNS temporarily times out, the server will default to Google, breaking domain authentication and leaking your internal namespace structure to the public internet.
+> * **The Enterprise Solution:** The network adapter's DNS settings should *only* point to internal Domain Controllers. To allow the server to reach the outside internet, you configure **DNS Forwarders** within the DNS Server Management Console. The internal DNS server will handle AD requests locally, and explicitly forward unknown/external requests (like `google.com`) to `8.8.8.8`.
+>
+> **2. Static IP vs. DHCP Scope Conflicts**
+> * **The Risk:** In step 5.1.5, we "stole" a dynamic IP from the DHCP server and made it static. Because the DHCP server does not know we permanently claimed this IP, it might attempt to lease `192.168.2.91` to a newly connected device in the future. This creates an **IP Conflict**, instantly knocking the Domain Controller offline.
+> * **The Enterprise Solution:** Static IPs for critical infrastructure (Servers, Domain Controllers, network switches) are always assigned strictly *outside* of the active DHCP scope, or they are locked down on the DHCP server using a MAC Address Reservation. 
+>
+> **3. Single Point of Failure (High Availability)**
+> * **The Risk:** This lab builds a single Domain Controller. If this single virtual machine crashes or becomes corrupted, the entire network goes down. No users can log in, DNS resolution stops, and all shared resources become inaccessible.
+> * **The Enterprise Solution:** A production environment will always deploy at minimum **two** Domain Controllers (e.g., `DC01` and `DC02`). They continuously replicate the Active Directory database between each other. If `DC01` goes offline, `DC02` seamlessly takes over authentication and DNS requests.
