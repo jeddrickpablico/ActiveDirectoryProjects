@@ -271,3 +271,24 @@ With the directory architecture and security groups securely in place, user acco
   <img src="./images/DomainControllerInstallationAndSetup/30.PNG" alt="Validating and assigning group membership" width="700">
 </p>
 <p><i>Figure 4.5: Resolving the group name and finalizing user permissions.</i></p>
+
+## 💻 Phase 5: Joining a Client Virtual Machine to the Domain
+
+The final step is to test our new Active Directory setup by making sure a separate computer can successfully log in using the user accounts we just created.
+
+In this phase, we will utilize a separate client virtual machine running concurrently with our Windows Server 2022 instance. **Crucial OS Requirement:** The client operating system must have the native capability to join a corporate domain. This means you must use an enterprise-grade version of Windows, such as:
+*   **Windows 10/11 Pro**
+*   **Windows 10/11 Enterprise**
+*   **Windows 10/11 Education**
+
+*(Note: Standard **Windows Home** editions completely block domain-joining features and cannot be used for this step).*
+
+To ensure the client machine can communicate reliably with the directory, we will configure the Windows Server to have a permanent static IP address first. Once the server's network profile is locked down, we will configure this client's network adapter to utilize our Domain Controller as its primary DNS server, establish a connection to the `JeddrickPablico.local` domain, and finally, log in using the specific user credentials provisioned in Phase 4. This process confirms that the Domain Controller is actively resolving DNS queries, managing network identities, and securely handling remote authentication requests across the homelab environment.
+
+**5.1 Configuring a Static IP Address on the Windows Server** 
+
+**5.1.1** Right-click the network/computer icon in the system tray (located at the bottom-right corner of your taskbar) and click **Open Network & Internet settings**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/31.PNG" alt="Opening Network and Internet Settings from the system tray" width="700">
+</p>
+<p><i>Figure 5.1.1: Navigating to Network & Internet Settings.</i></p>
