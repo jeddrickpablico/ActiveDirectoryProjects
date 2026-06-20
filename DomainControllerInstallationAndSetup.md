@@ -379,3 +379,120 @@ To test the domain, you must install a fresh instance of a compatible Windows OS
 </p>
 <p><i>Figure 5.2.2: Establishing a temporary local account to complete the OS installation.</i></p>
 
+**5.2.3** Once you reach the Windows desktop, open your Network & Internet Settings, navigate to **Change adapter options**, and right-click your network adapter to select **Properties**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/40.PNG" alt="Accessing the client machine network adapter properties" width="700">
+</p>
+<p><i>Figure 5.2.3: Opening the client network adapter properties.</i></p>
+
+**5.2.4** Select **Internet Protocol Version 4 (TCP/IPv4)** from the list and click **Properties**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/41.PNG" alt="Selecting IPv4 Properties on the client machine" width="700">
+</p>
+<p><i>Figure 5.2.4: Accessing the IPv4 configuration on the client.</i></p>
+
+**5.2.5** In this menu, leave the top option set to **"Obtain an IP address automatically"**. It is perfectly fine for client computers to have dynamic IPs. 
+
+However, you must select **"Use the following DNS server addresses"**. Active Directory relies entirely on DNS to locate the Domain Controller. If the client doesn't know the exact IP address of the server, it cannot resolve the `JeddrickPablico.local` domain name to authenticate. *(This is precisely why we made the server's IP static in Phase 5.1; if the server's IP changed upon reboot, the client's DNS pointer would break, severing the domain connection).*
+
+*   **Preferred DNS server:** `192.168.2.91` *(The static IPv4 address of your Windows Server)*
+*   **Alternate DNS server:** `8.8.8.8` *(Google's public DNS for internet fallback)*
+
+Click **OK** to apply the settings.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/42.PNG" alt="Configuring the client DNS to point to the Domain Controller" width="700">
+</p>
+<p><i>Figure 5.2.5: Pointing the client's DNS queries to the Domain Controller.</i></p>
+
+**5.2.6** Before attempting to join the domain, we must verify network connectivity. Open the **Command Prompt** and type `ping 192.168.2.91` (replace with your server's IP). You should receive successful replies indicating the two machines can communicate. 
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/43.PNG" alt="Pinging the Domain Controller from the client machine" width="700">
+</p>
+<p><i>Figure 5.2.6: Verifying basic network connectivity via ping.</i></p>
+
+> ⚠️ **Enterprise Context: Real-World Practices vs. Homelab Configuration**
+> 
+> **1. Manual DNS vs. DHCP Scope Options**
+> * **The Risk:** In step 5.2.5, we manually typed the DNS server into the client computer. In a real corporate environment with hundreds of computers, doing this manually is impossible to maintain. 
+> * **The Enterprise Solution:** IT administrators configure a **DHCP Server** role. Inside the DHCP settings, they configure "Scope Options" (specifically Option 006). When a client plugs into the network, the DHCP server automatically hands it an IP address *and* automatically programs the preferred DNS server to point to the Domain Controller. 
+>
+> **2. The Client Alternate DNS Risk**
+> * **The Risk:** Setting `8.8.8.8` as the alternate DNS on a domain-joined client is a massive security and operational risk. If the Domain Controller takes a moment too long to respond, Windows may instantly failover the query to Google. Google cannot resolve internal network names, resulting in random "Domain Not Found" errors or mapped network drives suddenly disconnecting.
+> * **The Enterprise Solution:** Domain-joined clients should **only** have internal Domain Controllers listed in their DNS settings. The Domain Controller itself handles reaching out to the internet (via DNS Forwarders) on behalf of the client.
+>
+
+---
+
+### 5.3 Joining the Client to the Domain
+
+With the network adapter actively pointing to the Domain Controller for DNS resolution, the client machine is now ready to securely authenticate and bind to the Active Directory environment.
+
+**5.3.1** On the client machine, open the Windows Start menu and search for **"Rename this computer"**, then click the corresponding system settings option. Under the device specifications, look for the option to rename the PC (advanced) or click **Domain or workgroup** to open the classic System Properties dialog box.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/44.PNG" alt="Searching for Rename this computer in the Windows Start Menu" width="700">
+</p>
+<p><i>Figure 5.3.1: Accessing the advanced System Properties.</i></p>
+
+**5.3.2** In the System Properties window, click the **Change...** button. First, give the client computer a professional, identifiable Computer name (e.g., `CLIENT-PC01`). Next, under the "Member of" section, click the **Domain** radio button and type the Fully Qualified Domain Name (FQDN) of your server (e.g., `JeddrickPablico.local`). Click **OK**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/45.PNG" alt="Entering the domain name in the System Properties window" width="700">
+</p>
+<p><i>Figure 5.3.2: Changing the computer name and initiating the domain bind.</i></p>
+
+**5.3.3** If your DNS was configured correctly in Phase 5.2, a Windows Security credential prompt will appear. This means the client successfully resolved the domain name and is contacting the Domain Controller. Enter the credentials of your Active Directory **Administrator** account to authorize the machine to join the network. Click **OK**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/46.PNG" alt="Windows Security prompt asking for domain administrator credentials" width="700">
+</p>
+<p><i>Figure 5.3.3: Authorizing the domain join with administrator credentials.</i></p>
+
+**5.3.4** A welcome dialog box stating *"Welcome to the JeddrickPablico.local domain"* will appear. Click **OK**. You will then be prompted to restart the computer to apply the domain membership changes. Proceed with the reboot.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/47.PNG" alt="Welcome to the domain success message" width="700">
+</p>
+<p><i>Figure 5.3.4: Successfully joined the domain.</i></p>
+
+**5.3.5** Once the computer reboots, you will be presented with the Windows lock screen. Instead of logging into the local admin account, select **Other user** in the bottom left corner. Enter the credentials of the standard Active Directory user you created in Phase 4 (e.g., `john.doe`). Notice that the "Sign in to:" indicator below the password box now displays your NetBIOS domain name.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/48.PNG" alt="Logging in as Other User with domain credentials" width="700">
+</p>
+<p><i>Figure 5.3.5: Authenticating against the Domain Controller for the first time.</i></p>
+
+**5.3.6** Because we checked the *"User must change password at next logon"* box during account creation, Windows will immediately prompt you with a message indicating the password must be changed. Click **OK**.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/49.PNG" alt="Prompt requiring the user to change their password" width="700">
+</p>
+<p><i>Figure 5.3.6: Triggering the initial password policy.</i></p>
+
+**5.3.7** Type in a new, secure password for the user, confirm it, and press **ENTER**. The system will update the user's object inside Active Directory and log you into the Windows desktop.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/50.PNG" alt="Entering a new password for the domain user" width="700">
+</p>
+<p><i>Figure 5.3.7: Establishing the user's permanent password.</i></p>
+
+**5.3.8** To definitively verify your domain identity, open the **Command Prompt** and type `whoami`. The output should display your NetBIOS domain name followed by the username (e.g., `jeddrickpablico\john.doe`). 
+
+Congratulations! You have successfully installed a Windows Server, architected an Active Directory environment, provisioned secure user accounts, and bound a client workstation to the domain.
+<p>
+  <img src="./images/DomainControllerInstallationAndSetup/51.PNG" alt="Running whoami in command prompt to verify domain identity" width="700">
+</p>
+<p><i>Figure 5.3.8: Verifying the active session identity via Command Prompt.</i></p>
+
+> ⚠️ **Enterprise Context: Real-World Practices vs. Homelab Configuration**
+> 
+> **1. Managing the Computer Object**
+> * **The Process:** When you bind a computer to the domain in step 5.3.4, Active Directory automatically generates a "Computer Object" for it. 
+> * **The Enterprise Practice:** By default, AD drops all newly joined computers into a generic container called `CN=Computers`. Group Policies (GPOs) cannot be applied to default containers. Therefore, standard operating procedure dictates that immediately after a computer joins the domain, the IT administrator must open ADUC and physically move that new computer object from `CN=Computers` into the appropriately nested Organizational Unit (e.g., `OU=USA -> OU=Computers`) that we built in Phase 3.
+>
+> **2. Domain Join Permissions**
+> * **The Risk:** Out of the box, Active Directory allows *any* authenticated user to join up to 10 computers to the domain. In a real-world scenario, this is a massive security vulnerability, as an employee could plug a personal, malware-infected laptop into the wall and bind it to the corporate network.
+> * **The Enterprise Solution:** Administrators modify the Default Domain Policy to restrict the "Add workstations to domain" user right specifically to the "Domain Admins" or designated "IT Provisioning" security groups.
+
+---
+
+## ⏭️ What's Next?
+
+In the next tutorial, we will be diving into **Group Policy Management**. 
+
+Now that we have established our organizational structure, provisioned users, and successfully joined a client machine to the domain, Group Policy is where the true power of Active Directory comes to life. 
+
+Understanding Group Policy is critical for any IT professional because it enables **centralized configuration management and automated security enforcement**. Instead of an administrator manually clicking through settings on hundreds of individual workstations, Group Policy Objects (GPOs) allow you to change wallpaper backgrounds, map departmental network drives, push software installations, enforce strict password complexities, and lock down security vulnerabilities (like disabling USB ports) across an entire global enterprise—all from a single management console. It is the definitive tool for keeping an enterprise environment secure, uniform, and scalable.
