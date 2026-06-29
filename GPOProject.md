@@ -23,19 +23,18 @@ The GPMC is the central tool used by administrators to manage all Group Policy s
 
 **1.1** If you have not already installed the GPMC, open **Server Manager**, navigate to **Manage > Add Roles and Features**.
 <p>
-  <img src="./images/GroupPolicyManagement/1.PNG" alt="Installing Group Policy Management via Server Manager" width="700">
+  <img src="./images/GPOProject/1.PNG" alt="Installing Group Policy Management via Server Manager" width="700">
 </p>
 <p><i>Figure 1.1: Verifying the installation of the GPMC feature.</i></p>
 
 **1.2** Select all the default settings. Proceed to the **Features** tab. Ensure **Group Policy Management** is checked and complete the installation.
 <p>
-  <img src="./images/GroupPolicyManagement/2.PNG" alt="" width="700">
+  <img src="./images/GPOProject/2.PNG" alt="" width="700">
 </p>
 <p><i>Figure 1.2: </i></p>
 
 **1.3** To launch the console, open the Start Menu, type **Group Policy Management**, and open the application. Alternatively, you can find it under **Windows Administrative Tools**.
 <p>
-  <img src="./images/GroupPolicyManagement/3.PNG" alt="Opening Group Policy Management Console" width="700">
+  <img src="./images/GPOProject/3.PNG" alt="Opening Group Policy Management Console" width="700">
 </p>
 <p><i>Figure 1.3</i></p>
-
