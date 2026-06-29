@@ -43,17 +43,17 @@ The GPMC is the central tool used by administrators to manage all Group Policy s
 
 > 🧠 **Enterprise Context: GPO Hierarchy & Types**
 > Before creating policies, you must understand where and how settings are applied:
-> <p><img src="./images/GPOProject/4.PNG" alt="Graphic explaining Computer vs User Configurations" width="700"></p>
-> <p><i>Figure 1.4.1: Computer Configuration vs. User Configuration.</i></p>
 > 
 > **Configurations:**
 > * **Computer Configuration:** Applies settings directly to the local computer, regardless of which user logs into it.
 > * **User Configuration:** Applies settings to the user account, following that user to any machine they log into within the domain.
+> <p><img src="./images/GPOProject/4.png" alt="Graphic explaining Computer vs User Configurations" width="700"></p>
+> <p><i>Figure 1.4.1: Computer Configuration vs. User Configuration.</i></p>
 > 
 > **Settings Types:**
 > * **Policies:** Strictly enforced by Active Directory. Users *cannot* change these settings (e.g., Account lockout thresholds).
 > * **Preferences:** Set default baselines that users *are* allowed to modify later (e.g., Adding their own shortcuts alongside a default mapped network drive).
-> <p><img src="./images/GPOProject/5.PNG" alt="Graphic explaining Policies vs Preferences" width="700"></p>
+> <p><img src="./images/GPOProject/5.png" alt="Selecting the Group Policy Management feature" width="700"></p>
 > <p><i>Figure 1.4.2: Policies vs. Preferences.</i></p>
 
 ---
