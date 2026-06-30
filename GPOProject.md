@@ -91,22 +91,45 @@ Click **Apply** and **OK** for each setting.
 
 *This preference automatically connects client machines to shared network storage locations upon user login, ensuring employees have immediate access to their departmental files without manual configuration.*
 
-**2.2.1** Create a new GPO named `Drive Mapping` and select **Edit**.
-**2.2.2** Navigate to: **User Configuration > Preferences > Windows Settings > Drive Maps**.
-**2.2.3** Right-click in the empty pane, select **New**, then **Mapped Drive**. Choose a Drive Letter (e.g., `E:`) and input the network share location path (e.g., `\\ServerName\Folder`). Click **Apply** and **OK**.
+**2.2.1** Create a new GPO named `Drive Mapping`. Right-click on the new GPO and select **Edit**.
 <p>
-  <img src="./images/GPOProject/8.PNG" alt="Configuring a mapped network drive" width="700">
+  <img src="./images/GPOProject/8.PNG" alt="" width="700">
 </p>
-<p><i>Figure 2.2.3: Automating network resource mapping via User Preferences.</i></p>
+<p><i>Figure 2.2.1: </i></p>
 
+**2.2.2** Navigate to: **User Configuration > Preferences > Windows Settings > Drive Maps**.
+<p>
+  <img src="./images/GPOProject/9.PNG" alt="" width="700">
+</p>
+<p><i>Figure 2.2.1: </i></p>
+
+**2.2.3** Right-click in the empty pane, select **New**, then **Mapped Drive**.
+<p>
+  <img src="./images/GPOProject/10.PNG" alt="" width="700">
+</p>
+<p><i>Figure 2.2.3: </i></p>
+
+**2.2.4** Choose a Drive Letter (e.g., `E:`) and input the network share location path (e.g., `\\servername\foldername`). Click **Apply** and **OK**.
+<p>
+  <img src="./images/GPOProject/11.PNG" alt="Configuring a mapped network drive" width="700">
+</p>
+<p><i>Figure 2.2.4: </i></p>
+
+> ⚠️ **Future Project**
+> This is only a surface-level tutorial for drive mapping. There will be a more detailed tutorial on this on a future tutorial (For gemini: make this part clearer and better format)
 > ⚠️ **Enterprise Context: Hardcoded IPs and Item-Level Targeting**
-> In a real-world application, mapping a drive to a direct server name or IP (e.g., `\\FileServer01\HR`) is a single point of failure. If that server goes down, everyone loses access. Enterprises use **DFS (Distributed File System) Namespaces** (e.g., `\\JeddrickPablico.local\CompanyShares`), which automatically routes users to the nearest healthy server. Additionally, administrators use "Item-Level Targeting" within this GPO to ensure the HR drive is only mapped if the logged-in user belongs to the "HR Security Group."
+> In a real-world application, mapping a drive to a direct server name or IP (e.g., `\\FileServer01\HR`) is a single point of failure. If that server goes down, everyone loses access. Enterprises use **DFS (Distributed File System) Namespaces** (e.g., `\\JeddrickPablico.local\CompanyShares`), which automatically route users to the nearest healthy server. Additionally, administrators use "Item-Level Targeting" within this GPO to ensure the HR drive is only mapped if the logged-in user belongs to the "HR Security Group."
 
 ### 2.3 Desktop Wallpaper Policy (User Configuration -> Policy)
 
 *This policy standardizes the visual environment across all corporate workstations by forcing a specific background image, typically utilizing a company logo or an acceptable use policy.*
 
-**2.3.1** Create a new GPO named `Desktop Wallpaper` and select **Edit**. 
+**2.3.1** Create a new GPO named `Desktop Wallpaper`. Right-click on the new GPO and select **Edit**. 
+<p>
+  <img src="./images/GPOProject/11.PNG" alt="" width="700">
+</p>
+<p><i>Figure 2.3.1: </i></p>
+
 **2.3.2** Navigate to: **User Configuration > Policies > Administrative Templates > Desktop > Desktop**. 
 **2.3.3** Double-click **Desktop Wallpaper**. Select **Enabled**. Specify the exact path where the image is stored, set the wallpaper style to **Fill**, and click **OK**.
 
