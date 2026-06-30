@@ -4,8 +4,7 @@
 The primary objective of this project is to architect, configure, and secure the Active Directory environment using **Group Policy Objects (GPOs)**.
 
 This activity covers the following deployment milestones based on our network setup:
-* Installing and navigating the Group Policy Management Console (GPMC).
-* Understanding the critical architectural differences between Computer vs. User configurations, and Policies vs. Preferences.
+* Installing and navigating the Group Policy Management Console (GPMC) and understanding the critical architectural differences between Computer vs. User configurations, and Policies vs. Preferences.
 * Creating foundational GPOs (Password Policies, Drive Mapping, Desktop Wallpapers, Control Panel Restrictions, and USB Storage blocks).
 * Moving computer objects within Active Directory Users and Computers (ADUC) and linking GPOs to target Organizational Units (OUs).
 * Forcing policy updates on the client machine to test and verify domain restrictions.
@@ -51,9 +50,10 @@ The GPMC is the central tool used by administrators to manage all Group Policy s
 > <p><i>Figure 1.4.1: Computer Configuration vs. User Configuration.</i></p>
 > 
 > **Settings Types:**
-> * **Policies:** Strictly enforced by Active Directory. Users *cannot* change these settings (e.g., Account lockout thresholds).
-> * **Preferences:** Set default baselines that users *are* allowed to modify later (e.g., Adding their own shortcuts alongside a default mapped network drive).
-> <p><img src="./images/GPOProject/5.png" alt="Selecting the Group Policy Management feature" width="700"></p>
+> Both the Computer and User configuration nodes are further subdivided into two distinct processing categories: **Policies** and **Preferences**. Understanding the difference between these two is critical for effective domain management:
+> * **Policies:** These are mandatory, system-enforced constraints. Users *cannot* change these settings under any circumstances (e.g., Account lockout thresholds, blocking Control Panel access, or enforcing password length).
+> * **Preferences:** These act as recommended baselines and customizable defaults. Users *are* allowed to modify or delete these settings later (e.g., Pre-loading a mapped network drive that they can later unmap, or providing a default browser homepage).
+> <p><img src="./images/GPOProject/5.png" alt="Graphic explaining Policies vs Preferences" width="700"></p>
 > <p><i>Figure 1.4.2: Policies vs. Preferences.</i></p>
 
 ---
@@ -66,15 +66,20 @@ It is best practice to create GPOs in the central **Group Policy Objects** conta
 
 *This policy enforces fundamental account security by dictating how complex a password must be, its minimum length, and how frequently it must be changed to mitigate credential compromise.*
 
-**2.1.1** Right-click the **Group Policy Objects** folder (or directly on your domain) and select **New** or **Create a GPO in this domain, and Link it here...**. Name it `Password Policy` and click **OK**.
+**2.1.1** Right-click the **Group Policy Objects** folder (or directly on your domain) and select **New** or **Create a GPO in this domain**. Name it `Password Policy` and click **OK**.
 <p>
-  <img src="./images/GroupPolicyManagement/3.PNG" alt="Creating the Password Policy GPO" width="700">
+  <img src="./images/GPOProject/6.PNG" alt="Creating the Password Policy GPO" width="700">
 </p>
 <p><i>Figure 2.1.1: Establishing a new GPO for password security.</i></p>
 
 **2.1.2** Right-click the newly created `Password Policy` GPO and select **Edit**. Navigate to: **Computer Configuration > Policies > Windows Settings > Security Settings > Account Policies > Password Policy**.
+<p>
+  <img src="./images/GPOProject/7.PNG" alt="Navigating the Group Policy Management Editor to the Password Policy settings" width="700">
+</p>
+<p><i>Figure 2.1.2: Locating the Password Policy configurations within the GPO Editor.</i></p>
+
 **2.1.3** Double-click the policies in the right pane to enforce security standards:
-* **Minimum password length:** Define this policy and set it to `12 characters`.
+* **Minimum password length:** Click the checkbox for _Define this policy_ and set it to `12 characters`.
 * **Password must meet complexity requirements:** Set to `Enabled`.
 * **Maximum password age:** Define this policy and set it to `90 days`.
 Click **Apply** and **OK** for each setting.
@@ -90,7 +95,7 @@ Click **Apply** and **OK** for each setting.
 **2.2.2** Navigate to: **User Configuration > Preferences > Windows Settings > Drive Maps**.
 **2.2.3** Right-click in the empty pane, select **New**, then **Mapped Drive**. Choose a Drive Letter (e.g., `E:`) and input the network share location path (e.g., `\\ServerName\Folder`). Click **Apply** and **OK**.
 <p>
-  <img src="./images/GroupPolicyManagement/4.PNG" alt="Configuring a mapped network drive" width="700">
+  <img src="./images/GPOProject/8.PNG" alt="Configuring a mapped network drive" width="700">
 </p>
 <p><i>Figure 2.2.3: Automating network resource mapping via User Preferences.</i></p>
 
@@ -129,4 +134,3 @@ Click **Apply** and **OK** for each setting.
 
 > ⚠️ **Enterprise Context: The "BadUSB" Threat vs. Granular Control**
 > USB drives are a massive vector for ransomware, malware (like "BadUSB" devices that emulate keyboards to inject malicious code), and corporate data exfiltration. While a blanket GPO block works for a lab, it is often too disruptive for business operations. In enterprise environments, this is typically handled by advanced Endpoint Detection and Response (EDR) software, which allows IT to block unknown devices but whitelist specific, company-issued, hardware-encrypted USB drives.
-
