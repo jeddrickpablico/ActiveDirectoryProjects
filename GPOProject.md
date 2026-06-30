@@ -91,32 +91,33 @@ Click **Apply** and **OK** for each setting.
 
 *This preference automatically connects client machines to shared network storage locations upon user login, ensuring employees have immediate access to their departmental files without manual configuration.*
 
-**2.2.1** Create a new GPO named `Drive Mapping`. Right-click on the new GPO and select **Edit**.
+**2.2.1** Right-click the **Group Policy Objects** folder (or directly on your domain) and select **New**. Create a new GPO named `Drive Mapping`. Right-click on the new GPO and select **Edit**.
 <p>
-  <img src="./images/GPOProject/8.PNG" alt="" width="700">
+  <img src="./images/GPOProject/8.PNG" alt="Editing the Drive Mapping GPO" width="700">
 </p>
-<p><i>Figure 2.2.1: </i></p>
+<p><i>Figure 2.2.1: Right-clicking to edit the newly created Drive Mapping GPO.</i></p>
 
 **2.2.2** Navigate to: **User Configuration > Preferences > Windows Settings > Drive Maps**.
 <p>
-  <img src="./images/GPOProject/9.PNG" alt="" width="700">
+  <img src="./images/GPOProject/9.PNG" alt="Navigating to Drive Maps in the User Configuration Preferences" width="700">
 </p>
-<p><i>Figure 2.2.1: </i></p>
+<p><i>Figure 2.2.2: Locating the Drive Maps setting.</i></p>
 
 **2.2.3** Right-click in the empty pane, select **New**, then **Mapped Drive**.
 <p>
-  <img src="./images/GPOProject/10.PNG" alt="" width="700">
+  <img src="./images/GPOProject/10.PNG" alt="Creating a new Mapped Drive preference" width="700">
 </p>
-<p><i>Figure 2.2.3: </i></p>
+<p><i>Figure 2.2.3: Initiating a new mapped drive configuration.</i></p>
 
 **2.2.4** Choose a Drive Letter (e.g., `E:`) and input the network share location path (e.g., `\\servername\foldername`). Click **Apply** and **OK**.
 <p>
   <img src="./images/GPOProject/11.PNG" alt="Configuring a mapped network drive" width="700">
 </p>
-<p><i>Figure 2.2.4: </i></p>
+<p><i>Figure 2.2.4: Defining the drive letter and shared network path.</i></p>
 
-> ⚠️ **Future Project**
-> This is only a surface-level tutorial for drive mapping. There will be a more detailed tutorial on this on a future tutorial (For gemini: make this part clearer and better format)
+> ⏭️ **Upcoming Lab Module: Advanced File & Print Services**
+> *Note: This section demonstrates a basic, surface-level drive mapping execution. A comprehensive, dedicated tutorial covering advanced File Server management, NTFS permissions, and complex drive mapping architectures will be published in a future repository update.*
+> 
 > ⚠️ **Enterprise Context: Hardcoded IPs and Item-Level Targeting**
 > In a real-world application, mapping a drive to a direct server name or IP (e.g., `\\FileServer01\HR`) is a single point of failure. If that server goes down, everyone loses access. Enterprises use **DFS (Distributed File System) Namespaces** (e.g., `\\JeddrickPablico.local\CompanyShares`), which automatically route users to the nearest healthy server. Additionally, administrators use "Item-Level Targeting" within this GPO to ensure the HR drive is only mapped if the logged-in user belongs to the "HR Security Group."
 
@@ -124,14 +125,23 @@ Click **Apply** and **OK** for each setting.
 
 *This policy standardizes the visual environment across all corporate workstations by forcing a specific background image, typically utilizing a company logo or an acceptable use policy.*
 
-**2.3.1** Create a new GPO named `Desktop Wallpaper`. Right-click on the new GPO and select **Edit**. 
+**2.3.1** Right-click the **Group Policy Objects** folder (or directly on your domain) and select **New**. Create a new GPO named `Desktop Wallpaper`. Right-click on the new GPO and select **Edit**. 
 <p>
-  <img src="./images/GPOProject/11.PNG" alt="" width="700">
+  <img src="./images/GPOProject/12.PNG" alt="Editing the Desktop Wallpaper GPO" width="700">
 </p>
-<p><i>Figure 2.3.1: </i></p>
+<p><i>Figure 2.3.1: Opening the Desktop Wallpaper Group Policy Object for editing.</i></p>
 
 **2.3.2** Navigate to: **User Configuration > Policies > Administrative Templates > Desktop > Desktop**. 
-**2.3.3** Double-click **Desktop Wallpaper**. Select **Enabled**. Specify the exact path where the image is stored, set the wallpaper style to **Fill**, and click **OK**.
+<p>
+  <img src="./images/GPOProject/13.PNG" alt="Navigating to Desktop Wallpaper settings in the GPO Editor" width="700">
+</p>
+<p><i>Figure 2.3.2: Locating the administrative template for desktop backgrounds.</i></p>
+
+**2.3.3** Double-click **Desktop Wallpaper**. Select **Enabled**. Specify the exact path where the image is stored under **Wallpaper Name**, set the **Wallpaper Style** to your desire, and click **OK**.
+<p>
+  <img src="./images/GPOProject/14.PNG" alt="Enabling and defining the desktop wallpaper path" width="700">
+</p>
+<p><i>Figure 2.3.3: Configuring the wallpaper path and display style.</i></p>
 
 > ⚠️ **Enterprise Context: The Network Path Trap**
 > A common mistake is pointing the GPO wallpaper path to a local drive (e.g., `C:\Images\logo.jpg`). When the policy deploys, the client machine will look for that file on *its own* C: drive, fail to find it, and present a black screen. To work in production, the wallpaper must be hosted on a highly available network share that all computers have "Read" access to—typically the Domain Controller's built-in `SYSVOL` folder.
@@ -140,9 +150,23 @@ Click **Apply** and **OK** for each setting.
 
 *This policy prevents standard users from altering core system configurations, such as network adapter settings, installed software, or user account controls.*
 
-**2.4.1** Create a new GPO named `Restrict Control Panel` and select **Edit**.
+**2.4.1** Right-click the **Group Policy Objects** folder (or directly on your domain) and select **New**. Create a new GPO named `Restrict Control Panel`. Right-click on the new GPO and select **Edit**.
+<p>
+  <img src="./images/GPOProject/15.PNG" alt="Creating and editing the Restrict Control Panel GPO" width="700">
+</p>
+<p><i>Figure 2.4.1: Initiating the Control Panel restriction policy.</i></p>
+
 **2.4.2** Navigate to: **User Configuration > Policies > Administrative Templates > Control Panel**.
+<p>
+  <img src="./images/GPOProject/16.PNG" alt="Navigating to the Control Panel Administrative Templates" width="700">
+</p>
+<p><i>Figure 2.4.2: Locating the Control Panel restrictions section.</i></p>
+
 **2.4.3** Double-click **Prohibit access to Control Panel and PC settings**. Select **Enabled**, click **Apply**, and **OK**. This locks standard users out of critical system configurations.
+<p>
+  <img src="./images/GPOProject/17.PNG" alt="Enabling the prohibition of Control Panel access" width="700">
+</p>
+<p><i>Figure 2.4.3: Enforcing the Control Panel access block.</i></p>
 
 > ⚠️ **Enterprise Context: Mitigating Shadow IT**
 > Unrestricted local admin and Control Panel access is one of the leading causes of Helpdesk tickets. If users can change IP settings, disable their firewalls, or uninstall antivirus software, they create massive security vulnerabilities and network instability. Restricting this access ensures that environments remain uniform, compliant, and manageable.
@@ -151,9 +175,23 @@ Click **Apply** and **OK** for each setting.
 
 *This strict security policy disables the ability for endpoints to mount external flash drives or hard drives, neutralizing physical vectors for data theft or malware insertion.*
 
-**2.5.1** Create a new GPO named `Disable USB Devices` and select **Edit**. 
+**2.5.1** Right-click the **Group Policy Objects** folder (or directly on your domain) and select **New**. Create a new GPO named `Disable USB Devices`. Right-click on the new GPO and select **Edit**. 
+<p>
+  <img src="./images/GPOProject/18.PNG" alt="Creating and editing the Disable USB Devices GPO" width="700">
+</p>
+<p><i>Figure 2.5.1: Initiating the removable storage restriction policy.</i></p>
+
 **2.5.2** Navigate to: **Computer Configuration > Policies > Administrative Templates > System > Removable Storage Access**.
+<p>
+  <img src="./images/GPOProject/19.PNG" alt="Navigating to Removable Storage Access settings" width="700">
+</p>
+<p><i>Figure 2.5.2: Locating the system rules for removable media.</i></p>
+
 **2.5.3** Double-click **All Removable Storage classes: Deny all access**. Select **Enabled**, click **Apply**, and **OK**. This secures endpoints against unauthorized flash drives and data exfiltration.
+<p>
+  <img src="./images/GPOProject/20.PNG" alt="Enabling the denial of all removable storage access" width="700">
+</p>
+<p><i>Figure 2.5.3: Enforcing a blanket block on all USB storage devices.</i></p>
 
 > ⚠️ **Enterprise Context: The "BadUSB" Threat vs. Granular Control**
 > USB drives are a massive vector for ransomware, malware (like "BadUSB" devices that emulate keyboards to inject malicious code), and corporate data exfiltration. While a blanket GPO block works for a lab, it is often too disruptive for business operations. In enterprise environments, this is typically handled by advanced Endpoint Detection and Response (EDR) software, which allows IT to block unknown devices but whitelist specific, company-issued, hardware-encrypted USB drives.
