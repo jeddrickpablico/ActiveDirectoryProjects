@@ -7,7 +7,7 @@ This activity covers the following deployment milestones based on our network se
 * Installing and navigating the Group Policy Management Console (GPMC) and understanding the critical architectural differences between Computer vs. User configurations, and Policies vs. Preferences.
 * Creating foundational GPOs (Password Policies, Drive Mapping, Desktop Wallpapers, Control Panel Restrictions, and USB Storage blocks).
 * Linking GPOs to target Organizational Units (OUs).
-* Forcing policy updates on the client machine to test and verify domain restrictions.
+* Moving the Client Computer Object and forcing policy updates on the client machine to test and verify domain restrictions.
 
 ---
 
