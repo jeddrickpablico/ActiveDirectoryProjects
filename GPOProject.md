@@ -199,11 +199,11 @@ Click **Apply** and **OK** for each setting.
 
 ## 🛠️ Phase 3: Linking GPOs to Target Organizational Units (OUs)
 
-In the previous tutorial, we architected a logical hierarchy using Organizational Units (OUs) to represent distinct departments (e.g., IT, HR, Sales). We must now link the GPOs we created to these appropriate OUs so the configurations take effect. This is accomplished by dragging and dropping the GPOs within the GPMC.
+In the [previous tutorial](https://github.com/jeddrickpablico/ActiveDirectoryProjects/blob/main/DomainControllerInstallationAndSetup.md), we architected a logical hierarchy using Organizational Units (OUs) to represent distinct departments (e.g., IT, HR, Sales) and provisioned manual user accounts. We must now link the GPOs we created to these appropriate OUs so the configurations take effect. This is accomplished by dragging and dropping the GPOs within the GPMC.
 
 ### 3.1 Applying Computer Configuration GPOs
 
-**3.1.1** Computer configurations must be linked to the OUs containing the actual computer objects. Click the `Password Policy` GPO in the _Group Policy Objects_ folder and drag and drop it onto your target **Computer OU** (e.g., within the USA region).
+**3.1.1** Computer configurations must be linked directly to the OUs containing the actual computer objects. Click the `Password Policy` GPO in the _Group Policy Objects_ folder and drag and drop it onto your target **Computer OU** (e.g., within the USA region).
 <p>
   <img src="./images/GPOProject/21.PNG" alt="Dragging and dropping the Password Policy to the Computer OU" width="700">
 </p>
@@ -221,14 +221,14 @@ In the previous tutorial, we architected a logical hierarchy using Organizationa
 </p>
 <p><i>Figure 3.1.3: Confirming the successful deployment of the Group Policy Objects.</i></p>
 
-> ⚠️ **Enterprise Security Risk: The Password Policy Trap**
-> In this lab sequence, we linked the Password Policy to a specific Computer OU. **In a real-world Active Directory environment, this is a major security misconception.** A legacy Password Policy GPO linked to an OU *only affects the local user accounts* on those specific computers, NOT the domain users logging into them! To enforce password complexity for domain identities, the policy MUST be linked at the very root of the Domain (e.g., `JeddrickPablico.local`), usually via the Default Domain Policy. 
+> ⚠️ **Enterprise Security Risk: The Password Policy Trap & Domain Roots**
+> In this lab sequence, we linked the Password Policy to a specific Computer OU. **In a real-world Active Directory environment, this is a major security operational trap.** A legacy Password Policy GPO linked to a specific OU *only affects the local user accounts* on those machines, NOT the domain users logging into them! To enforce password complexity for domain identities, the policy MUST be linked at the very root of the Domain (e.g., `JeddrickPablico.local`), usually via the **Default Domain Policy**. 
 > 
-> Modern enterprises bypass this limitation entirely by utilizing **Fine-Grained Password Policies (FGPP)** via the Active Directory Administrative Center, which allows IT to assign different password rules to different security groups (e.g., Domain Admins require 16 characters, Standard Users require 12).
+> Furthermore, modern enterprises largely bypass this limitation by utilizing **Fine-Grained Password Policies (FGPP)**, which allows network engineers to assign different password rules to different security groups (e.g., Domain Admins require 16 characters and MFA, while Standard Users require 12).
 
 ### 3.2 Applying User Configuration GPOs
 
-**3.2.1** User configurations follow the employee, so they must be linked to the OUs containing user accounts. Drag and drop the `Restrict Control Panel`, `Drive Mapping`, and `Desktop Wallpaper` GPOs directly onto the **Users OU**.
+**3.2.1** User configurations follow the employee profile, so they must be linked to the OUs containing the actual user accounts. Drag and drop the `Restrict Control Panel`, `Drive Mapping`, and `Desktop Wallpaper` GPOs directly onto the **Users OU**.
 <p>
   <img src="./images/GPOProject/24.PNG" alt="Linking User GPOs to the Users OU" width="700">
 </p>
@@ -237,7 +237,7 @@ In the previous tutorial, we architected a logical hierarchy using Organizationa
 **3.2.2** Select **OK** for each prompt to confirm the links.
 
 > ⚠️ **Enterprise Context: Security Filtering vs. OU Linking**
-> While linking a GPO to an OU applies it to everyone inside, enterprises require more granularity. For example, you might want to restrict the Control Panel for standard employees but leave it accessible for Helpdesk staff residing in the exact same OU. Instead of architecting overly complex OU structures to separate these users, administrators use **Security Filtering**. They link the GPO to the OU, remove "Authenticated Users" from the scope, and add a specific Security Group (e.g., `SG-Standard-Employees`).
+> Aligning with the Principle of Least Privilege, linking a GPO to a blanket OU is often too broad for production networks. For example, you might want to restrict the Control Panel for standard employees but leave it accessible for Helpdesk staff residing in the exact same OU. Instead of architecting overly complex OU structures to separate these users, administrators use **Security Filtering**. They link the GPO to the OU, remove "Authenticated Users" from the policy's scope, and add a specific targeted Security Group (e.g., `SG-Standard-Employees`).
 
 ---
 
@@ -245,42 +245,52 @@ In the previous tutorial, we architected a logical hierarchy using Organizationa
 
 ### 4.1 Moving the Client Computer Object
 
-**4.1.1** When a new computer is joined to the domain, Active Directory places it into the generic `Computers` container by default. Because Group Policies cannot be linked to default containers, your Computer GPOs will fail to apply until this object is moved.
-**4.1.2** Open **Active Directory Users and Computers (ADUC)**.
+When a new computer is joined to the domain, Active Directory places it into the generic `Computers` container by default. Because Group Policies cannot be linked to default containers, your Computer GPOs will fail to apply until this object is physically moved.
+
+**4.1.1** Open Server Manager. Click **Tools** and select **Active Directory Users and Computers (ADUC)**.
 <p>
   <img src="./images/GPOProject/25.PNG" alt="Opening ADUC to manage computer objects" width="700">
 </p>
-<p><i>Figure 4.1.2: Navigating to ADUC to locate the newly joined client machine.</i></p>
+<p><i>Figure 4.1.1: Navigating to ADUC to locate the newly joined client machine.</i></p>
 
-**4.1.3** Click the default `Computers` folder, right-click the newly joined client computer object, click **Move**, and select your target `USA > Computers` OU.
+**4.1.2** Click the default `Computers` folder, right-click the newly joined client computer object, click **Move**, and select your target `USA > Computers` OU. Click **OK**.
 <p>
   <img src="./images/GPOProject/26.PNG" alt="Moving the computer object into the designated OU" width="700">
 </p>
-<p><i>Figure 4.1.3: Relocating the computer object to ensure GPOs apply correctly.</i></p>
+<p><i>Figure 4.1.2: Relocating the computer object to ensure GPOs apply correctly.</i></p>
 
-> ⚠️ **Enterprise Security Risk: The Default Container Vulnerability**
-> Relying on manual object moves in a large enterprise leads to unpatched, insecure machines sitting indefinitely in the default container because a technician forgot to move them. System administrators solve this by running the command `redircmp OU=Computers,OU=USA,DC=JeddrickPablico,DC=local`. This permanently changes the default landing zone for all newly joined computers to a heavily secured OU, ensuring compliance from the exact moment the machine touches the network.
+**4.1.3** Once moved, it is highly recommended as an enterprise best practice to immediately add a description to the computer object's properties to maintain accurate inventory tracking and auditing.
+
+> ⚠️ **Enterprise Security Risk: The Default Container & Stale Objects**
+> Relying on manual object moves in a large enterprise leads to unpatched, insecure machines sitting indefinitely in the default container because a technician forgot to move them. System administrators solve this by executing the command `redircmp OU=Computers,OU=USA,DC=JeddrickPablico,DC=local`. This permanently changes the default landing zone for all newly joined computers to a heavily secured OU, ensuring compliance from the exact moment the machine touches the network.
+> 
+> Additionally, "stale" computer objects left in AD can be leveraged by threat actors to forge Kerberos tickets or mask lateral movement. Routine auditing scripts must be implemented to disable inactive computer accounts.
 
 ### 4.2 Forcing the Policy Update
 
 **4.2.1** Switch to your domain-joined client machine. By default, Windows refreshes Group Policy settings on a randomized 90-minute cycle. 
+<p>
+  <img src="./images/GPOProject/27.PNG" alt="Logging in to John Doe" width="700">
+</p>
+<p><i>Figure 4.2.1: Accessing the client endpoint with a standard user account.</i></p>
+
 **4.2.2** To bypass this delay and test immediately, open the Command Prompt (CMD).
 <p>
-  <img src="./images/GPOProject/27.PNG" alt="Opening the Command Prompt on the client machine" width="700">
+  <img src="./images/GPOProject/28.PNG" alt="Opening the Command Prompt on the client machine" width="700">
 </p>
 <p><i>Figure 4.2.2: Accessing the command line on the client endpoint.</i></p>
 
-**4.2.3** Type `gpupdate /force` and press **Enter** to instantly pull the latest configuration from the Domain Controller.
+**4.2.3** Type `gpupdate /force` and press **Enter** to instantly pull the latest configuration from the Domain Controller. Wait for the success confirmation.
 <p>
-  <img src="./images/GPOProject/28.PNG" alt="Running gpupdate /force in command prompt" width="700">
+  <img src="./images/GPOProject/29.PNG" alt="Running gpupdate /force in command prompt" width="700">
 </p>
 <p><i>Figure 4.2.3: Forcing the client machine to immediately evaluate Active Directory policies.</i></p>
 
-**4.2.4** To test if the policies successfully applied, attempt to open the Control Panel. If configured correctly, you will be blocked from accessing it.
+**4.2.4** To test if the policies successfully applied, attempt to open the Control Panel. If configured correctly, you will see an error message and be blocked from accessing it.
 <p>
-  <img src="./images/GPOProject/29.PNG" alt="Control Panel access restricted by system administrator" width="700">
+  <img src="./images/GPOProject/30.PNG" alt="Control Panel access restricted by system administrator" width="700">
 </p>
 <p><i>Figure 4.2.4: Successful validation that the Group Policy Object is actively restricting the user.</i></p>
 
 > ⚠️ **Enterprise Context: Troubleshooting with GPResult**
-> When a policy fails to apply in the real world, administrators do not guess. They open an elevated command prompt on the client and run `gpresult /r` (or export it to a file using `gpresult /h report.html`). This command generates a detailed diagnostic report showing exactly which GPOs were successfully applied, which were filtered out, and which Domain Controller the machine authenticated against.
+> When a policy fails to apply in the real world, administrators do not guess. They open an elevated command prompt on the client and run `gpresult /r` (or export it to a file using `gpresult /h report.html`). This command generates a detailed diagnostic report showing exactly which GPOs were successfully applied, which were filtered out, and which Domain Controller the machine authenticated against. Additionally, they will audit the Windows Event Viewer (specifically Event IDs 1502 and 1054) to pinpoint exact failure states in the GPO application chain.
