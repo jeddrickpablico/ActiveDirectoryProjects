@@ -73,3 +73,147 @@ Once a folder is shared and secured, users can access it via two primary methods
 Regardless of the method used, both rely on a UNC (Universal Naming Convention) path to locate the resource, formatted as `\\ServerName\SharedFolderName`.
 
 ---
+
+## 🛠️ Phase 2: Establishing Active Directory Groups & Department Shares
+
+In this phase, we are establishing the foundation for a secure, compartmentalized file system. The core objective is to enforce the **Principle of Least Privilege**. We are setting up our environment so that an employee belonging to a specific department (such as HR) can only access the files and folders explicitly designated for their department. They will remain completely isolated and blocked from viewing or modifying the private data of other departments (such as IT). 
+
+Before configuring these permissions, we must create our target Security Groups in Active Directory, populate them with test users, and build the physical folder structure on the server.
+
+**2.1** Open **Active Directory Users and Computers (ADUC)**. Navigate to your target OU (e.g., `Users`). Right-click and select **New > Group**. Create two Global Security groups: `HR Department` and `IT Department`.
+<p>
+  <img src="./images/FileServicesProject/1.PNG" alt="Creating HR and IT security groups in ADUC" width="700">
+</p>
+<p><i>Figure 2.1: Provisioning the departmental security groups in Active Directory.</i></p>
+
+**2.2** Right-click and select **New > User** to create two test accounts. Create `Conan Doyle` and add him to the `HR Department` group. Create `Lacus` and add them to the `IT Department` group.
+<p>
+  <img src="./images/FileServicesProject/2.PNG" alt="Creating test users and adding them to groups" width="700">
+</p>
+<p><i>Figure 2.2: Populating the security groups with test accounts for future validation.</i></p>
+
+**2.3** On your Windows Server, open File Explorer and navigate to the local `C:` drive. Create a new root folder named `Department Shares`.
+<p>
+  <img src="./images/FileServicesProject/3.PNG" alt="Creating the Department Shares root folder" width="700">
+</p>
+<p><i>Figure 2.3: Establishing the main network directory.</i></p>
+
+**2.4** Inside `Department Shares`, create two subfolders named `HR` and `IT`.
+<p>
+  <img src="./images/FileServicesProject/4.PNG" alt="Creating HR and IT subfolders" width="700">
+</p>
+<p><i>Figure 2.4: Building the subfolder structure.</i></p>
+
+---
+
+## 🛠️ Phase 3: Architecting Baseline Share Permissions
+
+We must now expose the `Department Shares` folder to the network. This is where we configure the "front door" network access.
+
+**3.1** Right-click the root `Department Shares` folder, select **Properties**, and navigate to the **Sharing** tab. Click **Advanced Sharing**, check the box for **Share this folder**, and click **Permissions**.
+<p>
+  <img src="./images/FileServicesProject/5.PNG" alt="Opening Advanced Share Permissions" width="700">
+</p>
+<p><i>Figure 3.1: Configuring the front-door network access.</i></p>
+
+**3.2** By default, the `Everyone` group is granted **Read** access. Select the `Everyone` group and check the box to grant **Full Control**. Click **Apply** and **OK**.
+<p>
+  <img src="./images/FileServicesProject/6.PNG" alt="Granting Everyone Full Control" width="700">
+</p>
+<p><i>Figure 3.2: Setting the baseline share permission.</i></p>
+
+> ⚠️ **Enterprise Best Practice: The "Full Control" Share Permission Strategy**
+> You might wonder why we just granted "Full Control" at the Share level. It seems highly insecure to leave the network "front door" wide open. However, this is the modern enterprise standard, and it all comes back to the golden rule: **Share permissions and NTFS permissions combine, and the most restrictive applies.**
+> 
+> Share permissions are very basic (only Read, Change, and Full Control) and they cannot be applied to subfolders. NTFS permissions are incredibly granular and apply to every file and subfolder. By leaving the Share permissions wide open, network engineers ensure they never accidentally lock themselves out or create conflicting permission overlaps. They can confidently centrally manage all the real security and granular access control exclusively through the NTFS Security tab, knowing that NTFS will strictly overrule the wide-open Share permission.
+
+---
+
+## 🛠️ Phase 4: Managing NTFS Inheritance for Restricted Data
+
+Because we left the Share permissions wide open in Phase 3, we must now lock down the actual file system using NTFS. We need to isolate the `HR` and `IT` subfolders from each other by breaking the NTFS permission chain.
+
+### 4.1 Securing the HR Folder
+**4.1.1** Right-click the `HR` subfolder, select **Properties**, go to the **Security** tab, and click **Advanced**.
+**4.1.2** Click **Disable inheritance**. When prompted, select **Convert inherited permissions into explicit permissions on this object**.
+<p>
+  <img src="./images/FileServicesProject/8.PNG" alt="Disabling inheritance on the HR folder" width="700">
+</p>
+<p><i>Figure 4.1.2: Breaking the permission chain from the parent directory.</i></p>
+
+**4.1.3** In the permission entries list, locate the generic `Users` (or `Everyone`/`Authenticated Users`) group and click **Remove**. This strictly enforces our NTFS security by ensuring standard non-HR members lose access.
+**4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **OK**. Check the box for **Modify** or **Full Control** and click **OK** to apply. The HR folder is now completely isolated.
+<p>
+  <img src="./images/FileServicesProject/9.PNG" alt="Granting HR Department Full Control" width="700">
+</p>
+<p><i>Figure 4.1.4: Assigning explicit permissions exclusively to the HR department.</i></p>
+
+### 4.2 Securing the IT Folder
+**4.2.1** Repeat the exact same granular lockdown process for the `IT` subfolder: Right-click > **Properties** > **Security** > **Advanced** > **Disable Inheritance** > **Convert**.
+**4.2.2** Remove the generic `Users` group.
+**4.2.3** Click **Add**, select the `IT Department` group, and assign them **Modify** or **Full Control**. Click **Apply** and **OK**.
+
+---
+
+## 💻 Phase 5: Access-Based Enumeration (ABE) Deployment
+
+At this stage, our data is technically secure at the NTFS level. If an HR user logs in and opens `Department Shares`, they can access the `HR` folder. If they try to open the `IT` folder, they will be blocked by an "Access Denied" error. 
+
+However, leaving inaccessible folders visible to everyone creates a messy user experience. Seeing restricted folders causes UI clutter, prompts user confusion, and often generates unnecessary helpdesk tickets (e.g., "Why is my access denied when I click on this folder?"). 
+
+**Access-Based Enumeration (ABE)** clears this up entirely. ABE dynamically filters the user interface based on NTFS permissions. If a user does not have permission to read a folder, ABE makes that folder completely invisible to them, providing a clean, personalized, and highly secure File Explorer experience.
+
+**5.1** Open **Server Manager**, and navigate to **File and Storage Services > Shares** on the left-hand navigation pane.
+<p>
+  <img src="./images/FileServicesProject/10.PNG" alt="Navigating to Shares in Server Manager" width="700">
+</p>
+<p><i>Figure 5.1: Locating the active network shares in Server Manager.</i></p>
+
+**5.2** Right-click your active `Department Shares` share and select **Properties**.
+<p>
+  <img src="./images/FileServicesProject/11.PNG" alt="Opening Share Properties" width="700">
+</p>
+<p><i>Figure 5.2: Accessing the specific share settings.</i></p>
+
+**5.3** Go to the **Settings** tab. Check the box for **Enable access-based enumeration**. Click **Apply** and **OK**.
+<p>
+  <img src="./images/FileServicesProject/12.PNG" alt="Enabling Access-Based Enumeration" width="700">
+</p>
+<p><i>Figure 5.3: Toggling the ABE feature on the share.</i></p>
+
+**5.4** To validate the deployment, switch to your Windows 11 client machine. Log in as your HR user (`Conan Doyle`).
+**5.5** Open File Explorer and navigate to the UNC path of your server (e.g., `\\Server01\Department Shares`).
+**5.6** You will notice that the `HR` folder is fully visible, but the `IT` folder is completely invisible, successfully demonstrating ABE clearing up the interface based on user access.
+<p>
+  <img src="./images/FileServicesProject/13.PNG" alt="Verifying ABE on the client endpoint" width="700">
+</p>
+<p><i>Figure 5.6: Validation that restricted folders are successfully hidden from the user interface.</i></p>
+
+---
+
+## 🛡️ Phase 6: File Server Resource Manager (FSRM) Protection
+
+Now that our permissions and visibility are perfectly tuned, we must protect the server's storage capacity and prevent malicious or unapproved files from being dumped into the `Department Shares`.
+
+**6.1** Open **Server Manager**, navigate to **Manage > Add Roles and Features**, and install the **File Server Resource Manager (FSRM)** under the File and Storage Services node.
+<p>
+  <img src="./images/FileServicesProject/14.PNG" alt="Installing FSRM via Server Manager" width="700">
+</p>
+<p><i>Figure 6.1: Deploying the FSRM toolset for advanced storage control.</i></p>
+
+**6.2** Launch FSRM from the Administrative Tools. Navigate to **Quota Management > Quotas**.
+**6.3** Right-click and select **Create Quota**. Browse to your `C:\Department Shares` path. Apply a strict storage limit (e.g., a 10GB hard quota). This prevents either department from consuming all available server disk space.
+<p>
+  <img src="./images/FileServicesProject/15.PNG" alt="Configuring Quota Management in FSRM" width="700">
+</p>
+<p><i>Figure 6.3: Enforcing a hard quota limit on the network share.</i></p>
+
+**6.4** Navigate to **File Screening Management > File Screens**. 
+**6.5** Right-click and select **Create File Screen**. Browse to the `C:\Department Shares` path. Select templates to block **Audio and Video Files** and **Executable Files** from being saved to the server.
+<p>
+  <img src="./images/FileServicesProject/16.PNG" alt="Configuring File Screening to block media files" width="700">
+</p>
+<p><i>Figure 6.5: Applying file screens to reject unauthorized file types.</i></p>
+
+> 🧠 **Enterprise Context: Combating Shadow IT**
+> Without FSRM, users often treat expensive, highly-available SAN (Storage Area Network) space as their personal hard drive, backing up personal iPhones or downloading massive `.mp4` files. File Screening enforces acceptable use policies at the system level. Additionally, blocking `.exe` and script files on standard user shares is a critical defense-in-depth strategy against ransomware dropping executable payloads into accessible network drives.
