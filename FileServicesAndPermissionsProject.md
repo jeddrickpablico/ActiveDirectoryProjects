@@ -82,15 +82,21 @@ Before configuring these permissions, we must create our target Security Groups 
 
 **2.1** Open **Active Directory Users and Computers (ADUC)**. Navigate to your target OU (e.g., `Users`). Right-click and select **New > Group**. Create two Global Security groups: `HR Department` and `IT Department`.
 <p>
-  <img src="./images/FileServicesProject/1.PNG" alt="Creating HR and IT security groups in ADUC" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/1.PNG" alt="Creating HR and IT security groups in ADUC" width="700">
 </p>
 <p><i>Figure 2.1: Provisioning the departmental security groups in Active Directory.</i></p>
 
-**2.2** Right-click and select **New > User** to create two test accounts. Create `Conan Doyle` and add him to the `HR Department` group. Create `Lacus` and add them to the `IT Department` group.
+**2.2** Navigate to your target OU (e.g., `Users`). Right-click and select **New > User** to create two test accounts. Create a user `Conan Doyle` and add him to the `HR Department` group. To do this, right-click on Conan Doyle > Properties > Member Of (tab) > Add > Type in  HR Department > Check Names > OK
 <p>
-  <img src="./images/FileServicesProject/2.PNG" alt="Creating test users and adding them to groups" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/2.PNG" alt="Creating a test user and adding to HR Department" width="700">
 </p>
-<p><i>Figure 2.2: Populating the security groups with test accounts for future validation.</i></p>
+<p><i>Figure 2.2: </i></p>
+
+**2.2** Create another user named 'Lacus Doe' and add him to the IT Department. Do the same steps as 2.2, but this time, type in IT Department.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/3.PNG" alt="" width="700">
+</p>
+<p><i>Figure 2.2:</i></p>
 
 **2.3** On your Windows Server, open File Explorer and navigate to the local `C:` drive. Create a new root folder named `Department Shares`.
 <p>
