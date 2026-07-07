@@ -41,7 +41,6 @@ These are the foundational security settings of the file system itself.
 *   **Scope:** Can be applied to the parent folder, individual subfolders, and even specific files.
 *   **Granular Control:** Very detailed (Full Control, Modify, Read & Execute, etc.).
 
-
 **Share Permissions**
 These act as the "front door" to the folder when accessed over the network.
 *   **Where it applies:** *Only* applies to users accessing the folder remotely via the network. If a user logs into the server locally, share permissions are bypassed entirely.
@@ -56,21 +55,25 @@ These act as the "front door" to the folder when accessed over the network.
 > *Example:* If a user has "Full Control" via Share Permissions, but only "Read" via NTFS permissions, their effective access will be limited strictly to "Read".
 >
 > **Because of this rule, the modern enterprise best practice is to grant "Everyone - Full Control" on the Share tab, and then lock down all actual security and access control granularly using the NTFS Security tab.**
-> 
 
-### 1.3 Permission Inheritance
+### 1.3 Permission Inheritance & The Priority Hierarchy
 By default, permissions flow downwards. A child object (a subfolder) automatically **inherits** the permissions set on the parent folder by default.
 
-*   **Explicit vs. Inherited:** **Explicit permissions** are those assigned directly to a specific file or folder. Explicit permissions always take priority over inherited ones.
-*   **Disabling Inheritance:** If a specific subfolder (like an "Executive Payroll" folder inside an "HR" drive) needs completely different, stricter access levels than its parent, administrators can disable inheritance to break the chain and apply distinct explicit permissions.
-*   **Enterprise Scaling and ABE:** Relying heavily on breaking inheritance and setting explicit permissions everywhere can become an administrative nightmare in large companies. Instead of relying purely on complex explicit permissions to hide data, large environments utilize Access-Based Enumeration (ABE). ABE dynamically hides folders from a user's view if they do not have the NTFS permissions to read them, ensuring a clean and secure network environment without overly complicating the folder permission structure.
+When Windows evaluates NTFS access, it is common for a user to have conflicting permissions (e.g., they belong to one security group that is allowed, and another that is denied). Windows resolves these conflicts using a strict **Priority Hierarchy**. In this hierarchy, a higher-ranked rule absolutely trumps and overrides any lower-ranked rule (i.e., Priority 1 completely overrules 2, 3, and 4; Priority 2 overrules 3 and 4, and so on):
+
+1.  **Explicit Deny:** A deny rule manually set directly on the specific file/folder. This is the absolute highest priority and trumps everything else.
+2.  **Explicit Allow:** An allow rule manually set directly on the specific file/folder. 
+3.  **Inherited Deny:** A deny rule inherited downwards from a parent folder.
+4.  **Inherited Allow:** An allow rule inherited downwards from a parent folder.
+
+*(Note: If a user has neither an explicit/inherited allow nor an explicit/inherited deny, they face an **Implicit Deny**, meaning Windows simply assumes they do not have access).*
 
 ### 1.4 Sharing Methods
-Once a folder is shared and secured, users can access it via two primary methods using a **UNC (Universal Naming Convention)** path:
+Once a folder is shared and secured, users can access it via two primary methods:
 1.  **Network (Direct Access):** Users access the shared folder directly via a network path.
-2.  **Mapped Drive:** For easier, everyday access, a shared network folder can be "mapped" to a specific drive letter on the user's computer (e.g., making the company share appear as the Z: drive alongside their local C: drive).
+2.  **Mapped Drive:** For easier, everyday access, a shared network folder can be "mapped" to a specific drive letter on the user's computer (e.g., making the company share appear as the `Z:` drive alongside their local `C:` drive).
 
-Regardless of the method used, both rely on a UNC (Universal Naming Convention) path to locate the resource, formatted as `\\ServerName\SharedFolderName`.
+Both of these methods rely on utilizing a **UNC (Universal Naming Convention)** path to locate the resource over the network.
 
 ---
 
@@ -90,25 +93,30 @@ Before configuring these permissions, we must create our target Security Groups 
 <p>
   <img src="./images/FileServicesAndPermissionsProject/2.PNG" alt="Creating a test user and adding to HR Department" width="700">
 </p>
-<p><i>Figure 2.2: </i></p>
+<p><i>Figure 2.2: Adding the test user Conan Doyle to the HR Department security group.</i></p>
 
-**2.2** Create another user named 'Lacus Doe' and add him to the IT Department. Do the same steps as 2.2, but this time, type in IT Department.
+**2.3** Create another user named 'Lacus Doe' and add him to the IT Department. Do the same steps as 2.2, but this time, type in IT Department.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/3.PNG" alt="" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/3.PNG" alt="Showing ADUC Users OU with the newly created test users and departmental groups" width="700">
 </p>
-<p><i>Figure 2.2:</i></p>
+<p><i>Figure 2.3: Showing ADUC Users OU with the newly created test users and departmental groups.</i></p>
 
-**2.3** On your Windows Server, open File Explorer and navigate to the local `C:` drive. Create a new root folder named `Department Shares`.
+**2.4** On your Windows Server, open File Explorer and navigate to the local `C:` drive. Create a new root folder named `Department Shares`.
 <p>
-  <img src="./images/FileServicesProject/3.PNG" alt="Creating the Department Shares root folder" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/4.PNG" alt="Creating the Department Shares root folder" width="700">
 </p>
-<p><i>Figure 2.3: Establishing the main network directory.</i></p>
+<p><i>Figure 2.4: Establishing the main network directory.</i></p>
 
-**2.4** Inside `Department Shares`, create two subfolders named `HR` and `IT`.
+> 🧠 **Enterprise Context: Network Share Root Locations & Storage Abstraction**
+> A network share does *not* have to be created on the `C:` drive; it can physically reside on any volume attached to the server. While we are using the `C:` drive (the Operating System drive) for the simplicity of this lab environment, doing this in a real enterprise environment is highly discouraged. If users accidentally fill up the `C:` drive with file data, the server's operating system will crash. Production file servers always host network shares on completely separate, dedicated data drives (e.g., `D:`, `E:`) or isolated SAN (Storage Area Network) volumes to ensure OS stability. 
+> 
+> The beauty of Windows File Sharing is that this physical location is completely abstracted away from the end-user through the use of a **UNC (Universal Naming Convention)** path. Because users connect via the UNC path (e.g., `\\ServerName\Department Shares`), they never see the physical drive letter. This allows administrators to move the root folder from a `C:` drive to a massive `E:` drive in the background without breaking the network path or interrupting the users' workflow.
+
+**2.5** Inside `Department Shares`, create two subfolders named `HR` and `IT`.
 <p>
-  <img src="./images/FileServicesProject/4.PNG" alt="Creating HR and IT subfolders" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/5.PNG" alt="Creating HR and IT subfolders" width="700">
 </p>
-<p><i>Figure 2.4: Building the subfolder structure.</i></p>
+<p><i>Figure 2.5: Building the subfolder structure.</i></p>
 
 ---
 
@@ -118,13 +126,13 @@ We must now expose the `Department Shares` folder to the network. This is where 
 
 **3.1** Right-click the root `Department Shares` folder, select **Properties**, and navigate to the **Sharing** tab. Click **Advanced Sharing**, check the box for **Share this folder**, and click **Permissions**.
 <p>
-  <img src="./images/FileServicesProject/5.PNG" alt="Opening Advanced Share Permissions" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/6.PNG" alt="Opening Advanced Share Permissions" width="700">
 </p>
 <p><i>Figure 3.1: Configuring the front-door network access.</i></p>
 
 **3.2** By default, the `Everyone` group is granted **Read** access. Select the `Everyone` group and check the box to grant **Full Control**. Click **Apply** and **OK**.
 <p>
-  <img src="./images/FileServicesProject/6.PNG" alt="Granting Everyone Full Control" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/7.PNG" alt="Granting Everyone Full Control" width="700">
 </p>
 <p><i>Figure 3.2: Setting the baseline share permission.</i></p>
 
@@ -139,18 +147,27 @@ We must now expose the `Department Shares` folder to the network. This is where 
 
 Because we left the Share permissions wide open in Phase 3, we must now lock down the actual file system using NTFS. We need to isolate the `HR` and `IT` subfolders from each other by breaking the NTFS permission chain.
 
+> 🧠 **Enterprise Context: Priority Hierarchies & The Danger of "Explicit Denies"**
+> Why do we need to manually disable inheritance? 
+> 
+> **The Scenario if NOT disabled:** We established our baseline NTFS permissions on the parent `Department Shares` folder by giving everyone an **Inherited Allow** (Priority 4) so they can enter the root drive. If we leave inheritance enabled on the `HR` subfolder, the IT group automatically inherits that "Allow" downwards and can read confidential HR files. 
+>
+> Based on the **Priority Hierarchy** (discussed in Phase 1), the only way to stop an IT user who has an *Inherited Allow* without breaking inheritance would be to slap an **Explicit Deny** (Priority 1) directly on the HR folder for the IT group. While this technically works, relying on Explicit Denies is a massive enterprise anti-pattern. It creates "Deny Hell," making permissions incredibly messy and difficult to troubleshoot when users change departments. 
+>
+> **The Solution:** By disabling inheritance, we convert all those messy *Inherited Allows* into *Explicit Allows* (Priority 2). We can then simply **remove** the generic users or IT group from the access list entirely. Denying access by simply removing the "Allow" is much cleaner, safer, and easier to manage than layering "Explicit Denies" everywhere.
+
 ### 4.1 Securing the HR Folder
 **4.1.1** Right-click the `HR` subfolder, select **Properties**, go to the **Security** tab, and click **Advanced**.
 **4.1.2** Click **Disable inheritance**. When prompted, select **Convert inherited permissions into explicit permissions on this object**.
 <p>
-  <img src="./images/FileServicesProject/8.PNG" alt="Disabling inheritance on the HR folder" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/8.PNG" alt="Disabling inheritance on the HR folder" width="700">
 </p>
 <p><i>Figure 4.1.2: Breaking the permission chain from the parent directory.</i></p>
 
-**4.1.3** In the permission entries list, locate the generic `Users` (or `Everyone`/`Authenticated Users`) group and click **Remove**. This strictly enforces our NTFS security by ensuring standard non-HR members lose access.
+**4.1.3** In the permission entries list, locate the generic `Users` (or `Everyone`/`Authenticated Users`) group and click **Remove**. By doing this instead of using an Explicit Deny, we elegantly ensure standard non-HR members lose access.
 **4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **OK**. Check the box for **Modify** or **Full Control** and click **OK** to apply. The HR folder is now completely isolated.
 <p>
-  <img src="./images/FileServicesProject/9.PNG" alt="Granting HR Department Full Control" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/9.PNG" alt="Granting HR Department Full Control" width="700">
 </p>
 <p><i>Figure 4.1.4: Assigning explicit permissions exclusively to the HR department.</i></p>
 
@@ -171,27 +188,27 @@ However, leaving inaccessible folders visible to everyone creates a messy user e
 
 **5.1** Open **Server Manager**, and navigate to **File and Storage Services > Shares** on the left-hand navigation pane.
 <p>
-  <img src="./images/FileServicesProject/10.PNG" alt="Navigating to Shares in Server Manager" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/10.PNG" alt="Navigating to Shares in Server Manager" width="700">
 </p>
 <p><i>Figure 5.1: Locating the active network shares in Server Manager.</i></p>
 
 **5.2** Right-click your active `Department Shares` share and select **Properties**.
 <p>
-  <img src="./images/FileServicesProject/11.PNG" alt="Opening Share Properties" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/11.PNG" alt="Opening Share Properties" width="700">
 </p>
 <p><i>Figure 5.2: Accessing the specific share settings.</i></p>
 
 **5.3** Go to the **Settings** tab. Check the box for **Enable access-based enumeration**. Click **Apply** and **OK**.
 <p>
-  <img src="./images/FileServicesProject/12.PNG" alt="Enabling Access-Based Enumeration" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/12.PNG" alt="Enabling Access-Based Enumeration" width="700">
 </p>
 <p><i>Figure 5.3: Toggling the ABE feature on the share.</i></p>
 
 **5.4** To validate the deployment, switch to your Windows 11 client machine. Log in as your HR user (`Conan Doyle`).
-**5.5** Open File Explorer and navigate to the UNC path of your server (e.g., `\\Server01\Department Shares`).
+**5.5** Open File Explorer and navigate to the **UNC (Universal Naming Convention)** path of your server (e.g., `\\Server01\Department Shares`). As explained in step 2.4, utilizing this UNC format allows the user to easily access the network share without needing to know if the physical files live on the server's `C:`, `D:`, or `E:` drive.
 **5.6** You will notice that the `HR` folder is fully visible, but the `IT` folder is completely invisible, successfully demonstrating ABE clearing up the interface based on user access.
 <p>
-  <img src="./images/FileServicesProject/13.PNG" alt="Verifying ABE on the client endpoint" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/13.PNG" alt="Verifying ABE on the client endpoint" width="700">
 </p>
 <p><i>Figure 5.6: Validation that restricted folders are successfully hidden from the user interface.</i></p>
 
@@ -203,21 +220,21 @@ Now that our permissions and visibility are perfectly tuned, we must protect the
 
 **6.1** Open **Server Manager**, navigate to **Manage > Add Roles and Features**, and install the **File Server Resource Manager (FSRM)** under the File and Storage Services node.
 <p>
-  <img src="./images/FileServicesProject/14.PNG" alt="Installing FSRM via Server Manager" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/14.PNG" alt="Installing FSRM via Server Manager" width="700">
 </p>
 <p><i>Figure 6.1: Deploying the FSRM toolset for advanced storage control.</i></p>
 
 **6.2** Launch FSRM from the Administrative Tools. Navigate to **Quota Management > Quotas**.
 **6.3** Right-click and select **Create Quota**. Browse to your `C:\Department Shares` path. Apply a strict storage limit (e.g., a 10GB hard quota). This prevents either department from consuming all available server disk space.
 <p>
-  <img src="./images/FileServicesProject/15.PNG" alt="Configuring Quota Management in FSRM" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/15.PNG" alt="Configuring Quota Management in FSRM" width="700">
 </p>
 <p><i>Figure 6.3: Enforcing a hard quota limit on the network share.</i></p>
 
 **6.4** Navigate to **File Screening Management > File Screens**. 
 **6.5** Right-click and select **Create File Screen**. Browse to the `C:\Department Shares` path. Select templates to block **Audio and Video Files** and **Executable Files** from being saved to the server.
 <p>
-  <img src="./images/FileServicesProject/16.PNG" alt="Configuring File Screening to block media files" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/16.PNG" alt="Configuring File Screening to block media files" width="700">
 </p>
 <p><i>Figure 6.5: Applying file screens to reject unauthorized file types.</i></p>
 
