@@ -158,23 +158,35 @@ Because we left the Share permissions wide open in Phase 3, we must now lock dow
 
 ### 4.1 Securing the HR Folder
 **4.1.1** Right-click the `HR` subfolder, select **Properties**, go to the **Security** tab, and click **Advanced**.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/8.PNG" alt="Navigating to the Advanced Security settings for the HR folder" width="700">
+</p>
+<p><i>Figure 4.1.1: Opening the Advanced Security settings.</i></p>
+
 **4.1.2** Click **Disable inheritance**. When prompted, select **Convert inherited permissions into explicit permissions on this object**.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/8.PNG" alt="Disabling inheritance on the HR folder" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/9.PNG" alt="Disabling inheritance on the HR folder" width="700">
 </p>
 <p><i>Figure 4.1.2: Breaking the permission chain from the parent directory.</i></p>
 
 **4.1.3** In the permission entries list, locate the generic `Users` (or `Everyone`/`Authenticated Users`) group and click **Remove**. By doing this instead of using an Explicit Deny, we elegantly ensure standard non-HR members lose access.
-**4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **OK**. Check the box for **Modify** or **Full Control** and click **OK** to apply. The HR folder is now completely isolated.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/9.PNG" alt="Granting HR Department Full Control" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/10.PNG" alt="Removing the generic Users group from the permission entries" width="700">
+</p>
+<p><i>Figure 4.1.3: Stripping unauthorized broad access from the restricted folder.</i></p>
+
+**4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control**, then click **OK** to apply. Click **OK** once more to close the properties window. The HR folder is now completely isolated.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/11.PNG" alt="Granting HR Department Full Control" width="700">
 </p>
 <p><i>Figure 4.1.4: Assigning explicit permissions exclusively to the HR department.</i></p>
 
 ### 4.2 Securing the IT Folder
 **4.2.1** Repeat the exact same granular lockdown process for the `IT` subfolder: Right-click > **Properties** > **Security** > **Advanced** > **Disable Inheritance** > **Convert**.
+
 **4.2.2** Remove the generic `Users` group.
-**4.2.3** Click **Add**, select the `IT Department` group, and assign them **Modify** or **Full Control**. Click **Apply** and **OK**.
+
+**4.2.3** Click **Add**, click **Select a principal**, type `IT Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control**, then click **OK** to apply.
 
 ---
 
@@ -188,19 +200,19 @@ However, leaving inaccessible folders visible to everyone creates a messy user e
 
 **5.1** Open **Server Manager**, and navigate to **File and Storage Services > Shares** on the left-hand navigation pane.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/10.PNG" alt="Navigating to Shares in Server Manager" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/12.PNG" alt="Navigating to Shares in Server Manager" width="700">
 </p>
 <p><i>Figure 5.1: Locating the active network shares in Server Manager.</i></p>
 
 **5.2** Right-click your active `Department Shares` share and select **Properties**.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/11.PNG" alt="Opening Share Properties" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/13.PNG" alt="Opening Share Properties" width="700">
 </p>
 <p><i>Figure 5.2: Accessing the specific share settings.</i></p>
 
 **5.3** Go to the **Settings** tab. Check the box for **Enable access-based enumeration**. Click **Apply** and **OK**.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/12.PNG" alt="Enabling Access-Based Enumeration" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/14.PNG" alt="Enabling Access-Based Enumeration" width="700">
 </p>
 <p><i>Figure 5.3: Toggling the ABE feature on the share.</i></p>
 
@@ -208,7 +220,7 @@ However, leaving inaccessible folders visible to everyone creates a messy user e
 **5.5** Open File Explorer and navigate to the **UNC (Universal Naming Convention)** path of your server (e.g., `\\Server01\Department Shares`). As explained in step 2.4, utilizing this UNC format allows the user to easily access the network share without needing to know if the physical files live on the server's `C:`, `D:`, or `E:` drive.
 **5.6** You will notice that the `HR` folder is fully visible, but the `IT` folder is completely invisible, successfully demonstrating ABE clearing up the interface based on user access.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/13.PNG" alt="Verifying ABE on the client endpoint" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/15.PNG" alt="Verifying ABE on the client endpoint" width="700">
 </p>
 <p><i>Figure 5.6: Validation that restricted folders are successfully hidden from the user interface.</i></p>
 
@@ -220,21 +232,21 @@ Now that our permissions and visibility are perfectly tuned, we must protect the
 
 **6.1** Open **Server Manager**, navigate to **Manage > Add Roles and Features**, and install the **File Server Resource Manager (FSRM)** under the File and Storage Services node.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/14.PNG" alt="Installing FSRM via Server Manager" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/16.PNG" alt="Installing FSRM via Server Manager" width="700">
 </p>
 <p><i>Figure 6.1: Deploying the FSRM toolset for advanced storage control.</i></p>
 
 **6.2** Launch FSRM from the Administrative Tools. Navigate to **Quota Management > Quotas**.
 **6.3** Right-click and select **Create Quota**. Browse to your `C:\Department Shares` path. Apply a strict storage limit (e.g., a 10GB hard quota). This prevents either department from consuming all available server disk space.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/15.PNG" alt="Configuring Quota Management in FSRM" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/17.PNG" alt="Configuring Quota Management in FSRM" width="700">
 </p>
 <p><i>Figure 6.3: Enforcing a hard quota limit on the network share.</i></p>
 
 **6.4** Navigate to **File Screening Management > File Screens**. 
 **6.5** Right-click and select **Create File Screen**. Browse to the `C:\Department Shares` path. Select templates to block **Audio and Video Files** and **Executable Files** from being saved to the server.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/16.PNG" alt="Configuring File Screening to block media files" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/18.PNG" alt="Configuring File Screening to block media files" width="700">
 </p>
 <p><i>Figure 6.5: Applying file screens to reject unauthorized file types.</i></p>
 
