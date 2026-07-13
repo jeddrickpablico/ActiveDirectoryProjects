@@ -175,7 +175,7 @@ Because we left the Share permissions wide open in Phase 3, we must now lock dow
 </p>
 <p><i>Figure 4.1.3: Stripping unauthorized broad access from the restricted folder.</i></p>
 
-**4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control**, then click **OK** to apply. Click **OK** once more to close the properties window. The HR folder is now completely isolated.
+**4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control** and click **OK** to apply. Click **OK** again. The HR folder is now completely isolated.
 <p>
   <img src="./images/FileServicesAndPermissionsProject/11.PNG" alt="Granting HR Department Full Control" width="700">
 </p>
@@ -186,13 +186,47 @@ Because we left the Share permissions wide open in Phase 3, we must now lock dow
 
 **4.2.2** Remove the generic `Users` group.
 
-**4.2.3** Click **Add**, click **Select a principal**, type `IT Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control**, then click **OK** to apply.
+**4.2.3** Click **Add**, select the `IT Department` group, and assign them **Modify** or **Full Control**. Click **Apply** and **OK**.
+
+### 4.3 Client-Side Permission Verification
+
+**4.3.1** To verify that the Share and NTFS permissions are functioning as intended, log into the Windows 11 client machine as Conan Doyle. Recall that this user account belongs to the `HR Department` security group, granting it access to the HR directory. 
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/12.PNG" alt="Logging into the Windows 11 client machine as Conan Doyle" width="700">
+</p>
+<p><i>Figure 4.3.1: Logging in as Conan Doyle.</i></p>
+
+**4.3.2** To access the `Department Shares` folder across the network, you must utilize its **UNC (Universal Naming Convention)** path. A UNC path dictates a standard, non-case-sensitive format to locate network resources, structured as `\\ServerName\SharedFolderName`. 
+
+To find your exact Server Name, switch back to your Windows Server, open the **Command Prompt**, type `hostname`, and press Enter. The text will display your server's identity. In this example, the server name is `WIN-KGDVID5G4RQ`, making the full UNC path `\\WIN-KGDVID5G4RQ\Department Shares`.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/13.PNG" alt="Executing the hostname command in the Windows Server command prompt" width="700">
+</p>
+<p><i>Figure 4.3.2: Typing 'hostname' at the command prompt to identify the server name.</i></p>
+
+**4.3.3** Return to the client machine logged in as Conan Doyle. Open **File Explorer** and type the UNC path directly into the **Address Bar** at the top of the window, then press Enter.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/14.PNG" alt="Entering the UNC path into the File Explorer address bar" width="700">
+</p>
+<p><i>Figure 4.3.3: Accessing the Department Shares folder using the UNC path.</i></p>
+
+**4.3.4** Attempt to open the `IT` folder by double-clicking it. Because we explicitly removed standard users and only granted access to the IT Department group in Step 4.2.3, Conan Doyle is met with a strict "Access Denied" error prompt. The NTFS security boundary is successfully enforced.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/15.PNG" alt="Windows Security prompt displaying an Access Denied error for the IT folder" width="700">
+</p>
+<p><i>Figure 4.3.4: Error prompt when attempting unauthorized access to the IT folder.</i></p>
+
+**4.3.5** Conversely, double-clicking the `HR` folder grants immediate access without any errors, validating the explicit Allow permission granted to the HR Department group.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/16.PNG" alt="Successfully accessing the contents of the HR directory" width="700">
+</p>
+<p><i>Figure 4.3.5: Successfully accessing the designated HR folder.</i></p>
 
 ---
 
 ## 💻 Phase 5: Access-Based Enumeration (ABE) Deployment
 
-At this stage, our data is technically secure at the NTFS level. If an HR user logs in and opens `Department Shares`, they can access the `HR` folder. If they try to open the `IT` folder, they will be blocked by an "Access Denied" error. 
+At this stage, our data is technically secure at the NTFS level. If an HR user logs in and opens `Department Shares`, they can access the `HR` folder. As proven in the previous step, if they try to open the `IT` folder, they are blocked by an "Access Denied" error. 
 
 However, leaving inaccessible folders visible to everyone creates a messy user experience. Seeing restricted folders causes UI clutter, prompts user confusion, and often generates unnecessary helpdesk tickets (e.g., "Why is my access denied when I click on this folder?"). 
 
@@ -200,27 +234,29 @@ However, leaving inaccessible folders visible to everyone creates a messy user e
 
 **5.1** Open **Server Manager**, and navigate to **File and Storage Services > Shares** on the left-hand navigation pane.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/12.PNG" alt="Navigating to Shares in Server Manager" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/17.PNG" alt="Navigating to Shares in Server Manager" width="700">
 </p>
 <p><i>Figure 5.1: Locating the active network shares in Server Manager.</i></p>
 
 **5.2** Right-click your active `Department Shares` share and select **Properties**.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/13.PNG" alt="Opening Share Properties" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/18.PNG" alt="Opening Share Properties" width="700">
 </p>
 <p><i>Figure 5.2: Accessing the specific share settings.</i></p>
 
 **5.3** Go to the **Settings** tab. Check the box for **Enable access-based enumeration**. Click **Apply** and **OK**.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/14.PNG" alt="Enabling Access-Based Enumeration" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/19.PNG" alt="Enabling Access-Based Enumeration" width="700">
 </p>
 <p><i>Figure 5.3: Toggling the ABE feature on the share.</i></p>
 
-**5.4** To validate the deployment, switch to your Windows 11 client machine. Log in as your HR user (`Conan Doyle`).
-**5.5** Open File Explorer and navigate to the **UNC (Universal Naming Convention)** path of your server (e.g., `\\Server01\Department Shares`). As explained in step 2.4, utilizing this UNC format allows the user to easily access the network share without needing to know if the physical files live on the server's `C:`, `D:`, or `E:` drive.
-**5.6** You will notice that the `HR` folder is fully visible, but the `IT` folder is completely invisible, successfully demonstrating ABE clearing up the interface based on user access.
+**5.4** To validate the deployment, switch back to your Windows 11 client machine (which is still logged in as the HR user, Conan Doyle).
+
+**5.5** Refresh the File Explorer window pointing to your UNC path (`\\WIN-KGDVID5G4RQ\Department Shares`).
+
+**5.6** You will notice an immediate change: the `HR` folder remains fully visible, but the `IT` folder has completely vanished. ABE is successfully clearing up the interface by hiding elements the user does not have permission to access.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/15.PNG" alt="Verifying ABE on the client endpoint" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/20.PNG" alt="Verifying ABE on the client endpoint with the IT folder hidden" width="700">
 </p>
 <p><i>Figure 5.6: Validation that restricted folders are successfully hidden from the user interface.</i></p>
 
@@ -232,21 +268,23 @@ Now that our permissions and visibility are perfectly tuned, we must protect the
 
 **6.1** Open **Server Manager**, navigate to **Manage > Add Roles and Features**, and install the **File Server Resource Manager (FSRM)** under the File and Storage Services node.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/16.PNG" alt="Installing FSRM via Server Manager" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/21.PNG" alt="Installing FSRM via Server Manager" width="700">
 </p>
 <p><i>Figure 6.1: Deploying the FSRM toolset for advanced storage control.</i></p>
 
 **6.2** Launch FSRM from the Administrative Tools. Navigate to **Quota Management > Quotas**.
+
 **6.3** Right-click and select **Create Quota**. Browse to your `C:\Department Shares` path. Apply a strict storage limit (e.g., a 10GB hard quota). This prevents either department from consuming all available server disk space.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/17.PNG" alt="Configuring Quota Management in FSRM" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/22.PNG" alt="Configuring Quota Management in FSRM" width="700">
 </p>
 <p><i>Figure 6.3: Enforcing a hard quota limit on the network share.</i></p>
 
 **6.4** Navigate to **File Screening Management > File Screens**. 
+
 **6.5** Right-click and select **Create File Screen**. Browse to the `C:\Department Shares` path. Select templates to block **Audio and Video Files** and **Executable Files** from being saved to the server.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/18.PNG" alt="Configuring File Screening to block media files" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/23.PNG" alt="Configuring File Screening to block media files" width="700">
 </p>
 <p><i>Figure 6.5: Applying file screens to reject unauthorized file types.</i></p>
 
