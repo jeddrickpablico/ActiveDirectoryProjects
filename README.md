@@ -8,7 +8,7 @@ This repository contains the documentation, configurations, and deployment strat
 ## 🛠️ Infrastructure & Tech Stack
 * **Operating Systems:** Windows Server 2022 / Windows Server 2025 (Domain Controllers), Windows 10/11 Enterprise & Pro (Client Machines)
 * **Virtualization Platform:** VMware Workstation
-* **Core Network Services:** Active Directory Domain Services (AD DS), DNS, Group Policy Management
+* **Core Network Services:** Active Directory Domain Services (AD DS), DNS, Group Policy Management, Windows File Services
 
 ---
 
@@ -31,6 +31,15 @@ This repository contains the documentation, configurations, and deployment strat
 * Configured automated user experience preferences, including network drive mapping and standardized corporate desktop wallpapers.
 * Executed proper object management by relocating default computer objects into structured OUs for precise policy targeting.
 * Validated deployments by forcing GPO updates (`gpupdate /force`) on domain-joined client endpoints to ensure active restriction enforcement.
+
+### 3. Windows File Services & Permission Management
+**📖 [View the Full Step-by-Step Project Documentation Here](https://github.com/jeddrickpablico/ActiveDirectoryProjects/blob/main/FileServicesAndPermissionsProject.md)**
+
+* Established foundational network shares and mapped them to Active Directory Security Groups to enforce the Principle of Least Privilege.
+* Architected security boundaries utilizing the critical differences between baseline Share permissions and highly granular NTFS permissions.
+* Managed advanced permission inheritance to effectively isolate and secure confidential departmental data.
+* Deployed Access-Based Enumeration (ABE) to dynamically filter the File Explorer interface, hiding restricted folders from unauthorized users.
+* Configured File Server Resource Manager (FSRM) to deploy storage quotas and active file screening, preventing unauthorized media and executable payloads from entering the network storage.
 
 ---
 *Note: This repository is actively updated as new security policies, logging architectures, and automation scripts are integrated into the domain.*
