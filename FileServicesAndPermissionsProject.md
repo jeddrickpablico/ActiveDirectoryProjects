@@ -6,10 +6,10 @@ The primary objective of this project is to provision, secure, and manage centra
 This activity covers the following deployment milestones based on our network setup:
 * Understanding the architectural differences between NTFS and Shared permissions, inheritance, and network access methods.
 * Establishing foundational network shares and deploying them to client machines.
-* Installing and configuring FSRM to implement storage Quotas and File Screening to restrict unauthorized media.
-* Understanding and applying the critical architectural differences between NTFS and Shared permissions.
-* Managing advanced permission inheritance to secure confidential departmental data.
+* Applying the critical architectural differences between NTFS and Shared permissions to establish baseline access.
+* Managing advanced permission inheritance to secure and isolate confidential departmental data.
 * Enabling Access-Based Enumeration (ABE) to securely hide restricted resources from unauthorized users.
+* Installing and configuring FSRM to implement storage Quotas and File Screening to restrict unauthorized media.
 
 ---
 
