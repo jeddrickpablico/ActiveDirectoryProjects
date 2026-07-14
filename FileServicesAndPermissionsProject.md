@@ -68,7 +68,14 @@ When Windows evaluates NTFS access, it is common for a user to have conflicting 
 
 *(Note: If a user has neither an explicit/inherited allow nor an explicit/inherited deny, they face an **Implicit Deny**, meaning Windows simply assumes they do not have access).*
 
-### 1.4 Sharing Methods
+### 1.4 Access-Based Enumeration (ABE) Core Concepts
+Relying heavily on breaking inheritance and setting explicit permissions secures data, but it does not hide it. **Access-Based Enumeration (ABE)** is utilized to dynamically filter the file or folder view based on user access. When planning an ABE deployment, remember these technical constraints:
+
+*   **Visibility, Not Security:** ABE does not change permissions, nor does it grant or deny access. It simply prevents users from seeing what they already do not have access to. 
+*   **Volume Requirements:** ABE is deeply tied into the NTFS permissions structure. It only works on NTFS volumes and cannot function on other file systems like FAT32, exFAT, or APFS.
+*   **Reliance on ACLs:** ABE does not protect files from being accessed if permissions are misconfigured. It relies entirely on proper NTFS permissions being set beforehand.
+
+### 1.5 Sharing Methods
 Once a folder is shared and secured, users can access it via two primary methods:
 1.  **Network (Direct Access):** Users access the shared folder directly via a network path.
 2.  **Mapped Drive:** For easier, everyday access, a shared network folder can be "mapped" to a specific drive letter on the user's computer (e.g., making the company share appear as the `Z:` drive alongside their local `C:` drive).
@@ -175,7 +182,7 @@ Because we left the Share permissions wide open in Phase 3, we must now lock dow
 </p>
 <p><i>Figure 4.1.3: Stripping unauthorized broad access from the restricted folder.</i></p>
 
-**4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control** and click **OK** to apply. Click **OK** again. The HR folder is now completely isolated.
+**4.1.4** Click **Add**, click **Select a principal**, type `HR Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control**, then click **OK** to apply. Click **OK** once more to close the properties window. The HR folder is now completely isolated.
 <p>
   <img src="./images/FileServicesAndPermissionsProject/11.PNG" alt="Granting HR Department Full Control" width="700">
 </p>
@@ -186,7 +193,7 @@ Because we left the Share permissions wide open in Phase 3, we must now lock dow
 
 **4.2.2** Remove the generic `Users` group.
 
-**4.2.3** Click **Add**, select the `IT Department` group, and assign them **Modify** or **Full Control**. Click **Apply** and **OK**.
+**4.2.3** Click **Add**, click **Select a principal**, type `IT Department`, and click **Check Names**. Once confirmed, click **OK**. Check the box for **Modify** or **Full Control**, then click **OK** to apply.
 
 ### 4.3 Client-Side Permission Verification
 
@@ -210,9 +217,9 @@ To find your exact Server Name, switch back to your Windows Server, open the **C
 </p>
 <p><i>Figure 4.3.3: Accessing the Department Shares folder using the UNC path.</i></p>
 
-**4.3.4** Attempt to open the `IT` folder by double-clicking it. Because we explicitly removed standard users and only granted access to the IT Department group in Step 4.2.3, Conan Doyle is met with a strict "Access Denied" error prompt. The NTFS security boundary is successfully enforced.
+**4.3.4** Attempt to open the `IT` folder by double-clicking it. Because we explicitly removed standard users and only granted access to the IT Department group in Step 4.2.3, Conan Doyle is met with a strict "Network Error" prompt. The NTFS security boundary is successfully enforced.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/15.PNG" alt="Windows Security prompt displaying an Access Denied error for the IT folder" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/15.PNG" alt="Windows Security prompt displaying a Network Error for the IT folder" width="700">
 </p>
 <p><i>Figure 4.3.4: Error prompt when attempting unauthorized access to the IT folder.</i></p>
 
@@ -226,11 +233,15 @@ To find your exact Server Name, switch back to your Windows Server, open the **C
 
 ## 💻 Phase 5: Access-Based Enumeration (ABE) Deployment
 
-At this stage, our data is technically secure at the NTFS level. If an HR user logs in and opens `Department Shares`, they can access the `HR` folder. As proven in the previous step, if they try to open the `IT` folder, they are blocked by an "Access Denied" error. 
+At this stage, our data is technically secure at the NTFS level. If an HR user logs in and opens `Department Shares`, they can access the `HR` folder. As proven in the previous step, if they try to open the `IT` folder, they are blocked by a "Network Error".
 
 However, leaving inaccessible folders visible to everyone creates a messy user experience. Seeing restricted folders causes UI clutter, prompts user confusion, and often generates unnecessary helpdesk tickets (e.g., "Why is my access denied when I click on this folder?"). 
 
-**Access-Based Enumeration (ABE)** clears this up entirely. ABE dynamically filters the user interface based on NTFS permissions. If a user does not have permission to read a folder, ABE makes that folder completely invisible to them, providing a clean, personalized, and highly secure File Explorer experience.
+**Access-Based Enumeration (ABE)** resolves this by hiding files and folders from users who do not have permissions to access them, ensuring users only see what they are allowed to open. Implementing ABE is a critical best practice because it:
+*   **Enhances Security:** It prevents users from even knowing certain folders exist if they lack the required permissions, reducing the risk of unauthorized access attempts and protecting sensitive information from prying eyes.
+*   **Reduces Confusion:** Users might see many folders they can't access, which raises frustration, especially in environments with large shared drives. ABE presents a cleaner, more intuitive experience by only showing relevant folders.
+*   **Protects Privacy:** It protects the privacy of sensitive folders so that users who are not "in the know" are not even aware of their existence on the server.
+*   **Reduces Help Desk Overhead:** By hiding inaccessible objects, ABE reduces the number of failed access attempts, error logs, and potential security alerts. It significantly cuts down on help desk tickets from users assuming something is broken when they see a folder they can't open.
 
 **5.1** Open **Server Manager**, and navigate to **File and Storage Services > Shares** on the left-hand navigation pane.
 <p>
@@ -250,15 +261,17 @@ However, leaving inaccessible folders visible to everyone creates a messy user e
 </p>
 <p><i>Figure 5.3: Toggling the ABE feature on the share.</i></p>
 
-**5.4** To validate the deployment, switch back to your Windows 11 client machine (which is still logged in as the HR user, Conan Doyle).
+**5.4** To validate the deployment, switch back to your Windows 11 client machine. Ensure you are logged in as Conan Doyle (who is part of the HR department and does not have access to the IT folder).
 
-**5.5** Refresh the File Explorer window pointing to your UNC path (`\\WIN-KGDVID5G4RQ\Department Shares`).
+**5.5** Refresh the File Explorer window pointing to your UNC path (e.g., `\\WIN-KGDVID5G4RQ\Department Shares`). 
 
-**5.6** You will notice an immediate change: the `HR` folder remains fully visible, but the `IT` folder has completely vanished. ABE is successfully clearing up the interface by hiding elements the user does not have permission to access.
+**5.6** You will notice an immediate change: the `HR` folder remains fully visible, but the `IT` folder has completely vanished. ABE is successfully filtering the view based on user access.
 <p>
   <img src="./images/FileServicesAndPermissionsProject/20.PNG" alt="Verifying ABE on the client endpoint with the IT folder hidden" width="700">
 </p>
 <p><i>Figure 5.6: Validation that restricted folders are successfully hidden from the user interface.</i></p>
+
+> 💡 **Troubleshooting Note:** If the 'IT' folder remains visible, you may need to log out and log back in on the client machine, restart the File Server services on your host, or execute `gpupdate /force` in the command prompt to force a policy and connection refresh.
 
 ---
 
