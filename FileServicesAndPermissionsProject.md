@@ -285,21 +285,35 @@ Now that our permissions and visibility are perfectly tuned, we must protect the
 </p>
 <p><i>Figure 6.1: Deploying the FSRM toolset for advanced storage control.</i></p>
 
-**6.2** Launch FSRM from the Administrative Tools. Navigate to **Quota Management > Quotas**.
-
-**6.3** Right-click and select **Create Quota**. Browse to your `C:\Department Shares` path. Apply a strict storage limit (e.g., a 10GB hard quota). This prevents either department from consuming all available server disk space.
+**6.2** Launch FSRM from Server Manager. Navigate to **Tools > File Server Resource Manager**.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/22.PNG" alt="Configuring Quota Management in FSRM" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/22.PNG" alt="Launching File Server Resource Manager from the Server Manager Tools menu" width="700">
 </p>
-<p><i>Figure 6.3: Enforcing a hard quota limit on the network share.</i></p>
+<p><i>Figure 6.2: Accessing the FSRM administrative console.</i></p>
 
-**6.4** Navigate to **File Screening Management > File Screens**. 
-
-**6.5** Right-click and select **Create File Screen**. Browse to the `C:\Department Shares` path. Select templates to block **Audio and Video Files** and **Executable Files** from being saved to the server.
+**6.3** In the left navigation pane, expand **Quota Management**, right-click on **Quotas**, and select **Create Quota**.
 <p>
-  <img src="./images/FileServicesAndPermissionsProject/23.PNG" alt="Configuring File Screening to block media files" width="700">
+  <img src="./images/FileServicesAndPermissionsProject/23.PNG" alt="Navigating to Quota Management and selecting Create Quota" width="700">
 </p>
-<p><i>Figure 6.5: Applying file screens to reject unauthorized file types.</i></p>
+<p><i>Figure 6.3: Initiating a new storage quota.</i></p>
+
+**6.4** Browse to your `C:\Department Shares` path. Apply a strict storage limit (e.g., a 10GB hard quota) to prevent either department from consuming all available server disk space. Click **Create**.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/24.PNG" alt="Configuring Quota Management in FSRM" width="700">
+</p>
+<p><i>Figure 6.4: Enforcing a hard quota limit on the network share.</i></p>
+
+**6.5** Expand **File Screening Management**, right-click on **File Screens**, and select **Create File Screen**.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/25.PNG" alt="Navigating to File Screens and selecting Create File Screen" width="700">
+</p>
+<p><i>Figure 6.5: Initiating a new file screen rule.</i></p>
+
+**6.6** Browse to the `C:\Department Shares` path. Select **Define custom file screen properties** and click **Custom Properties**. Check the boxes for **Audio and Video Files**, **Compressed Files**, and **Executable Files** to actively block these file types from being saved to the server. Click **OK**, then click **Create**.
+<p>
+  <img src="./images/FileServicesAndPermissionsProject/26.PNG" alt="Configuring Custom Properties in File Screening to block media, compressed, and executable files" width="700">
+</p>
+<p><i>Figure 6.6: Applying custom file screens to reject unauthorized file types.</i></p>
 
 > 🧠 **Enterprise Context: Combating Shadow IT**
 > Without FSRM, users often treat expensive, highly-available SAN (Storage Area Network) space as their personal hard drive, backing up personal iPhones or downloading massive `.mp4` files. File Screening enforces acceptable use policies at the system level. Additionally, blocking `.exe` and script files on standard user shares is a critical defense-in-depth strategy against ransomware dropping executable payloads into accessible network drives.
